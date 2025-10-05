@@ -1,13 +1,13 @@
 # Documentação da Solução — Chat por Proximidade
 
-A new Flutter project.
+Aplicativo móvel em desenvolvimento que permite a troca de mensagens entre dispositivos próximos.
 
 # Instalação do Projeto
 
 1. Abra o terminal ou prompt de comando
 2. Navege até a pasta de destino que deseja salvar o projeto pelo próprio terminal
 3. Clone o repositório através do comando: git clone 
-5. Entre na pasta do projeto: cd Chat_comunicacao_proximidade
+5. Entre na pasta do projeto: cd chat_comunicacao_proximidade
 6. Abra a IDE: code .
 7. Abra o terminal da IDE e digite o comando: flutter run
 8. Projeto instalado com sucesso!
