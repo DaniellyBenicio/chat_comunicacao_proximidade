@@ -8,8 +8,8 @@ A new Flutter project.
 2. Navege até a pasta de destino que deseja salvar o projeto pelo próprio terminal
 3. Clone o repositório através do comando: git clone 
 5. Entre na pasta do projeto: cd Chat_comunicacao_proximidade
-6. Abra a IDE: .code
-7. No terminal da IDE digite o comando: flutter run
+6. Abra a IDE: code .
+7. Abra o terminal da IDE e digite o comando: flutter run
 8. Projeto instalado com sucesso!
 
 
