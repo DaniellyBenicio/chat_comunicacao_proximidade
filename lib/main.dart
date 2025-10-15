@@ -13,7 +13,7 @@ class ChatProximidadeApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Chat por Proximidade',
+      title: 'GeoTalk',
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFF7F9FC),
         primaryColor: const Color(0xFF004E89),

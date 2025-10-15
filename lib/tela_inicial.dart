@@ -1,3 +1,4 @@
+import 'package:chat_de_conversa/OnboardingScreen.dart';
 import 'package:flutter/material.dart';
 
 class TelaInicialApp extends StatelessWidget {
@@ -14,12 +15,9 @@ class TelaInicialApp extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  'Chat Por\nProximidade',
+                  'GeoTalk',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 35,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 35),
                 Container(
@@ -50,10 +48,12 @@ class TelaInicialApp extends StatelessWidget {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                    /*Navigator.push(
+                      Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => OnboardingScreen()),
-                      );*/
+                        MaterialPageRoute(
+                          builder: (context) => OnboardingScreen1(),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF004E89),
