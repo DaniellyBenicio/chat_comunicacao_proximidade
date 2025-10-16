@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'register.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -119,8 +120,9 @@ class _LoginScreenState extends State<Login> {
             const SizedBox(height: 20),
             TextButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Criar uma nova conta')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Register()),
                 );
               },
               child: Text(
