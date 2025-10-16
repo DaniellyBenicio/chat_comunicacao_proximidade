@@ -13,17 +13,17 @@ class _OnboardingScreen1State extends State<OnboardingScreen1> {
 
   final List<Map<String, String>> onboardingData = [
     {
-      "image": "assets/images/",
+      "image": "assets/images/image1.png",
       "title": "Conversas mais\npróximas",
       "subtitle": "Agora as conversas ficaram\ncada vez mais próximas.",
     },
     {
-      "image": "assets/images/",
+      "image": "assets/images/image1.png",
       "title": "Conexões\nInstantâneas?",
       "subtitle": "As melhores conversas\ncomeçam perto de você.",
     },
     {
-      "image": "assets/images/",
+      "image": "assets/images/image1.png",
       "title": "Rede de\nProximidade",
       "subtitle": "Descubra quem está perto e\ncomece a conversar.",
     },
@@ -83,6 +83,16 @@ class _OnboardingScreen1State extends State<OnboardingScreen1> {
                           item["image"]!,
                           height: 300,
                           fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 300,
+                              color: Colors.grey[300],
+                              child: const Icon(
+                                Icons.image_not_supported,
+                                size: 50,
+                              ),
+                            );
+                          },
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
