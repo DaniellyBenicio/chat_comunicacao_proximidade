@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'register.dart';
 
-class OnboardingScreen1 extends StatefulWidget {
-  const OnboardingScreen1({super.key});
+class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen1> createState() => _OnboardingScreen1State();
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreen1State extends State<OnboardingScreen1> {
+class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
@@ -29,6 +31,17 @@ class _OnboardingScreen1State extends State<OnboardingScreen1> {
     },
   ];
 
+  Future<void> _completeOnboardingAndNavigateToCadastro() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('onboarding_completed', true);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const Register()),
+    );
+  }
+
   void _nextPage() {
     final nextPage = _currentPage + 1;
 
@@ -42,9 +55,7 @@ class _OnboardingScreen1State extends State<OnboardingScreen1> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Navegar para a tela de login
-      // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Login()));
-      print("Última página atingida!");
+      _completeOnboardingAndNavigateToCadastro();
     }
   }
 

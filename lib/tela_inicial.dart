@@ -51,7 +51,7 @@ class TelaInicialApp extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => OnboardingScreen1(),
+                          builder: (context) => const OnboardingScreen(),
                         ),
                       );
                     },
