@@ -27,9 +27,9 @@ class _RegisterState extends State<Register> {
 
   void _register() {
     if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('As senhas não coincidem')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('As senhas não coincidem')));
       return;
     }
 
@@ -50,20 +50,20 @@ class _RegisterState extends State<Register> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 80),
+              const SizedBox(height: 120),
               Text(
-                'Cadastro',
+                'Criar Conta',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 'Crie sua conta para continuar',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 16, color: Colors.grey[800]),
               ),
               const SizedBox(height: 40),
 
@@ -82,7 +82,7 @@ class _RegisterState extends State<Register> {
                 ),
                 keyboardType: TextInputType.name,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               // Email
               TextField(
@@ -99,7 +99,7 @@ class _RegisterState extends State<Register> {
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               // Senha
               TextField(
@@ -116,7 +116,9 @@ class _RegisterState extends State<Register> {
                   ),
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                      _obscurePassword
+                          ? Icons.visibility
+                          : Icons.visibility_off,
                       color: primaryColor,
                     ),
                     onPressed: () {
@@ -127,7 +129,7 @@ class _RegisterState extends State<Register> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
 
               // Confirmar Senha
               TextField(
@@ -157,21 +159,25 @@ class _RegisterState extends State<Register> {
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
 
               // Cadastrar
               ElevatedButton(
                 onPressed: _register,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: const Text(
                   'Cadastrar',
-                  style: TextStyle(fontSize: 18, color: Colors.white),
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -186,7 +192,10 @@ class _RegisterState extends State<Register> {
                 },
                 child: Text(
                   'Já tenho uma conta',
-                  style: TextStyle(color: Theme.of(context).primaryColor),
+                  style: TextStyle(
+                    color: Theme.of(context).secondaryHeaderColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),

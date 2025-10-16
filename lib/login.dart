@@ -32,17 +32,15 @@ class _LoginScreenState extends State<Login> {
             Text(
               'Login',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
               'Seja bem-vindo',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 16, color: Colors.grey[800]),
             ),
-            const SizedBox(
-              height: 40,
-            ), 
+            const SizedBox(height: 40),
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -57,7 +55,7 @@ class _LoginScreenState extends State<Login> {
               ),
               keyboardType: TextInputType.emailAddress,
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 30),
             TextField(
               controller: _passwordController,
               obscureText: _obscureText,
@@ -83,7 +81,7 @@ class _LoginScreenState extends State<Login> {
                 ),
               ),
             ),
-            const SizedBox(height: 10), 
+            const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(
@@ -103,18 +101,22 @@ class _LoginScreenState extends State<Login> {
               onPressed: () {
                 ScaffoldMessenger.of(
                   context,
-                ).showSnackBar(const SnackBar(content: Text(' Entrar ')));
+                ).showSnackBar(const SnackBar(content: Text('Entrar')));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               child: const Text(
                 'Entrar',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -127,7 +129,10 @@ class _LoginScreenState extends State<Login> {
               },
               child: Text(
                 'Criar uma nova conta',
-                style: TextStyle(color: Theme.of(context).primaryColor),
+                style: TextStyle(
+                  color: Theme.of(context).secondaryHeaderColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

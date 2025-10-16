@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
-import 'tela_inicial.dart'; 
-import 'login.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'tela_inicial.dart';
+import 'login.dart';
 
 void main() {
   runApp(const ChatProximidadeApp());
@@ -28,7 +28,8 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
 
   Future<void> _checkInitialFlow() async {
     final prefs = await SharedPreferences.getInstance();
-    final bool hasCompletedOnboarding = prefs.getBool('onboarding_completed') ?? false;
+    final bool hasCompletedOnboarding =
+        prefs.getBool('onboarding_completed') ?? false;
 
     setState(() {
       if (hasCompletedOnboarding) {
@@ -46,8 +47,9 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
       title: 'GeoTalk',
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFF7F9FC),
-        primaryColor: const Color(0xFF004E89), 
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF004E89)), // Boa prática
+        primaryColor: const Color(0xFF004E89),
+        secondaryHeaderColor: const Color(0xFF000000),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF004E89)),
         textTheme: GoogleFonts.poppinsTextTheme(),
         useMaterial3: true,
       ),
