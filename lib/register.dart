@@ -1,3 +1,4 @@
+import 'package:chat_de_conversa/login.dart';
 import 'package:flutter/material.dart';
 
 class Register extends StatefulWidget {
@@ -32,7 +33,6 @@ class _RegisterState extends State<Register> {
       return;
     }
 
-    // Aqui você pode adicionar a lógica de envio ao backend
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Cadastro realizado com sucesso!')),
     );
@@ -45,7 +45,7 @@ class _RegisterState extends State<Register> {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView( // rolagem em telas pequenas
+        child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -159,7 +159,7 @@ class _RegisterState extends State<Register> {
               ),
               const SizedBox(height: 30),
 
-              // Botão Cadastrar
+              // Cadastrar
               ElevatedButton(
                 onPressed: _register,
                 style: ElevatedButton.styleFrom(
@@ -176,14 +176,17 @@ class _RegisterState extends State<Register> {
               ),
               const SizedBox(height: 20),
 
-              // Link "Já tenho uma conta"
+              // Já tenho uma conta
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // volta para a tela de login
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Login()),
+                  );
                 },
                 child: Text(
                   'Já tenho uma conta',
-                  style: TextStyle(color: primaryColor),
+                  style: TextStyle(color: Theme.of(context).primaryColor),
                 ),
               ),
               const SizedBox(height: 20),
