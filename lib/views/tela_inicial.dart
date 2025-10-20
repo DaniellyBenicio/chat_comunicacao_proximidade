@@ -1,4 +1,4 @@
-import 'package:chat_de_conversa/OnboardingScreen.dart';
+import 'package:chat_de_conversa/views/OnboardingScreen.dart';
 import 'package:flutter/material.dart';
 
 class TelaInicialApp extends StatelessWidget {
