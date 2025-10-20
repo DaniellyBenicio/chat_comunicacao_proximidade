@@ -1,5 +1,5 @@
 import '../models/user.dart';
-import 'userController.dart'; 
+import 'user_controller.dart'; 
 import 'dart:developer';
 
 class AuthController {

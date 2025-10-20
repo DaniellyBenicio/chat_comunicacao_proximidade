@@ -1,6 +1,6 @@
 import 'package:sqflite_common/sqflite.dart'; 
 import '../models/user.dart';
-import '../services/databaseChat.dart'; 
+import '../services/database_chat.dart'; 
 
 class UserController {
   final DatabaseChat _dbProvider = DatabaseChat();

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chat_de_conversa/views/login.dart';
-import '../controllers/authController.dart'; 
+import '../controllers/auth_controller.dart'; 
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -67,7 +67,6 @@ class _RegisterState extends State<Register> {
 
     if (result['success'] == true) {
       _showSnackBar(result['message']);
-      // Navega para a tela de Login após o sucesso
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -126,7 +125,6 @@ class _RegisterState extends State<Register> {
                 ),
                 const SizedBox(height: 40),
 
-                // Nome
                 TextFormField(
                   controller: _nameController,
                   validator: (value) => _validateRequired(value, 'Nome'),
@@ -143,7 +141,6 @@ class _RegisterState extends State<Register> {
                 ),
                 const SizedBox(height: 20),
 
-                // Email
                 TextFormField(
                   controller: _emailController,
                   validator: (value) => _validateRequired(value, 'E-mail'),
@@ -160,7 +157,6 @@ class _RegisterState extends State<Register> {
                 ),
                 const SizedBox(height: 20),
 
-                // Senha
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -192,7 +188,6 @@ class _RegisterState extends State<Register> {
                 ),
                 const SizedBox(height: 20),
 
-                // Confirmar Senha
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
@@ -223,7 +218,6 @@ class _RegisterState extends State<Register> {
                 ),
                 const SizedBox(height: 40),
 
-                // Cadastrar
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
@@ -251,11 +245,12 @@ class _RegisterState extends State<Register> {
                 ),
                 const SizedBox(height: 20),
 
-                // Já tenho uma conta
                 TextButton(
                   onPressed: () {
-                    // Usa pop para voltar para a tela anterior (se estiver navegando de Login para Register)
-                    Navigator.pop(context); 
+                    Navigator.pushReplacement( 
+                      context,
+                      MaterialPageRoute(builder: (context) => const Login()),
+                    );
                   },
                   child: Text(
                     'Já tenho uma conta',

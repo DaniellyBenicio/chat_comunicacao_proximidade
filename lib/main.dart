@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart'; 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:chat_de_conversa/services/databaseChat.dart';
+import 'package:chat_de_conversa/services/database_chat.dart';
+import 'package:chat_de_conversa/services/bluetooth_service.dart'; 
 import 'package:chat_de_conversa/views/tela_inicial.dart';
 import 'package:chat_de_conversa/views/login.dart';
 
@@ -9,7 +11,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final dbHelper = DatabaseChat();
-  await dbHelper.database; 
+  await dbHelper.database;
 
   runApp(const ChatProximidadeApp());
 }
@@ -46,26 +48,28 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
     } catch (e) {
       print('Erro ao verificar onboarding: $e');
       setState(() {
-        _initialScreen =
-            const TelaInicialApp(); 
+        _initialScreen = const TelaInicialApp();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'GeoTalk',
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF7F9FC),
-        primaryColor: const Color(0xFF004E89),
-        secondaryHeaderColor: const Color(0xFF000000),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF004E89)),
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        useMaterial3: true,
+    return ChangeNotifierProvider(
+      create: (_) => BluetoothService(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'GeoTalk',
+        theme: ThemeData(
+          scaffoldBackgroundColor: const Color(0xFFF7F9FC),
+          primaryColor: const Color(0xFF004E89),
+          secondaryHeaderColor: const Color(0xFF000000),
+          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF004E89)),
+          textTheme: GoogleFonts.poppinsTextTheme(),
+          useMaterial3: true,
+        ),
+        home: _initialScreen,
       ),
-      home: _initialScreen,
     );
   }
 }

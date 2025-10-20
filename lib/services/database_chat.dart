@@ -1,6 +1,9 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:logger/logger.dart';
+
+final logger = Logger();
 
 class DatabaseChat {
   static const String _databaseName = 'chat_proximidade.db';
@@ -13,7 +16,9 @@ class DatabaseChat {
   DatabaseChat._internal();
 
   Future<Database> get database async {
-    if (_db != null) return _db!;
+    if (_db != null) {
+      return _db!;
+    }
     _db = await _initDb();
     return _db!;
   }
@@ -22,13 +27,13 @@ class DatabaseChat {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final path = join(directory.path, _databaseName);
-      print('Inicializando banco de dados em: $path');
+      logger.i('Inicializando banco de dados em: $path');
 
-      return await openDatabase(
+      final db = await openDatabase(
         path,
         version: _databaseVersion,
         onCreate: (db, version) async {
-          print('Criando tabelas...');
+          logger.i('Criando tabelas...');
           await db.execute('''
             CREATE TABLE messages (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,15 +53,24 @@ class DatabaseChat {
               bluetoothIdentifier TEXT NOT NULL UNIQUE
             )
           ''');
-          print('Tabelas criadas com sucesso!');
+          logger.i('Tabelas criadas com sucesso!');
         },
         onOpen: (db) {
-          print('Banco de dados aberto com sucesso.');
+          logger.i('Banco de dados aberto com sucesso.');
         },
       );
+      return db;
     } catch (e) {
-      print('Erro ao inicializar o banco de dados: $e');
+      logger.e('Erro ao inicializar o banco de dados: $e');
       rethrow;
+    }
+  }
+
+  Future<void> close() async {
+    if (_db != null) {
+      await _db!.close();
+      _db = null;
+      logger.i('Banco de dados fechado.');
     }
   }
 }
