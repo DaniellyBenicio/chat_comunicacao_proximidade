@@ -37,15 +37,13 @@ dependencies:
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.0.9
   shared_preferences: ^2.5.3
-
   path: ^1.8.3
+  path_provider: ^2.1.5
+  sqflite: ^2.3.3
+  sqlite3_flutter_libs: ^0.5.18
   flutter_blue_plus: ^1.32.8
-  sqflite_common: ^2.5.1 
-  sqflite_common_ffi: ^2.3.4 
-  sqflite_common_ffi_web: ^0.4.0 
 
 dev_dependencies:
-
   flutter_test:
     sdk: flutter
 
@@ -62,7 +60,7 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   uses-material-design: true
-  
+
   assets:
     - assets/images/
 
