@@ -22,6 +22,7 @@ class _LoginScreenState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -44,7 +45,8 @@ class _LoginScreenState extends State<Login> {
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
-                labelText: 'Email',
+                labelText: 'E-mail',
+                prefixIcon: Icon(Icons.email, color: primaryColor),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -61,6 +63,7 @@ class _LoginScreenState extends State<Login> {
               obscureText: _obscureText,
               decoration: InputDecoration(
                 labelText: 'Senha',
+                prefixIcon: Icon(Icons.lock, color: primaryColor),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -109,6 +112,7 @@ class _LoginScreenState extends State<Login> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
+                elevation: 5,
               ),
               child: const Text(
                 'Entrar',
