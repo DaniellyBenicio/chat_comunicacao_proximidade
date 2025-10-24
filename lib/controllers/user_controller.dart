@@ -4,6 +4,24 @@ import '../services/database_chat.dart';
 
 class UserController {
   final DatabaseChat _dbProvider = DatabaseChat();
+  
+
+  Future<User?> getUserByEmailAndPassword(String email, String password) async {
+    final db = await _dbProvider.database;
+    
+    
+    final maps = await db.query(
+      'users',
+      where: 'email = ? AND password = ?', // Busca por email E senha
+      whereArgs: [email, password],
+      limit: 1, // Limita a busca 
+    );
+
+    if (maps.isNotEmpty) {
+      return User.fromMap(maps.first);
+    }
+    return null;
+  }
 
   Future<int> insertUser(User user) async {
     final db = await _dbProvider.database;

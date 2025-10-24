@@ -4,6 +4,36 @@ import 'dart:developer';
 
 class AuthController {
   final UserController _userController = UserController();
+  
+
+  // Login
+  Future<Map<String, dynamic>> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    if (email.isEmpty || password.isEmpty) {
+      return {'success': false, 'message': 'E-mail ou senha não podem estar vazios.'};
+    }
+
+    try {
+      final user = await _userController.getUserByEmailAndPassword(email, password);
+
+      if (user != null) {
+        
+        log('Usuário logado com sucesso: ${user.email}');
+        return {
+          'success': true, 
+          'message': 'Login realizado com sucesso!',
+          'name': user.name,
+        };
+      } else {
+        return {'success': false, 'message': 'E-mail ou senha inválidos.'};
+      }
+    } catch (e) {
+      log("Erro durante o login: $e");
+      return {'success': false, 'message': 'Ocorreu um erro inesperado durante o login.'};
+    }
+  }
 
   Future<Map<String, dynamic>> registerUser({
     required String name,
