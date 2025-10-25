@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'register.dart';
-import 'tela_teste.dart'; 
+import 'principal.dart';
 import '../controllers/auth_controller.dart';
 
 class Login extends StatefulWidget {
@@ -13,9 +13,9 @@ class Login extends StatefulWidget {
 class _LoginScreenState extends State<Login> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final AuthController _authController = AuthController(); 
+  final AuthController _authController = AuthController();
   bool _obscureText = true;
-  String _errorMessage = ''; 
+  String _errorMessage = '';
 
   @override
   void dispose() {
@@ -24,10 +24,9 @@ class _LoginScreenState extends State<Login> {
     super.dispose();
   }
 
-//login
   void _handleLogin() async {
     setState(() {
-      _errorMessage = ''; 
+      _errorMessage = '';
     });
 
     final result = await _authController.loginUser(
@@ -39,7 +38,9 @@ class _LoginScreenState extends State<Login> {
       final String loggedInUserName = result['name'] ?? 'Usuário';
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => TelaTeste(userName: loggedInUserName)),
+        MaterialPageRoute(
+          builder: (context) => TelaTeste(userName: loggedInUserName),
+        ),
       );
     } else {
       setState(() {
@@ -112,17 +113,20 @@ class _LoginScreenState extends State<Login> {
                 ),
               ),
             ),
-            
+
             if (_errorMessage.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Text(
                   _errorMessage,
-                  style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ),
-            
+
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerLeft,
@@ -140,7 +144,7 @@ class _LoginScreenState extends State<Login> {
             ),
             const SizedBox(height: 10),
             ElevatedButton(
-              onPressed: _handleLogin, 
+              onPressed: _handleLogin,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 12),

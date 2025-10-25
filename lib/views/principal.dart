@@ -1,22 +1,15 @@
-
-
+import 'package:chat_de_conversa/views/login.dart';
 import 'package:flutter/material.dart';
 
 class TelaTeste extends StatelessWidget {
   final String userName;
 
-  const TelaTeste({
-    super.key,
-    required this.userName, // Recebe o nome do usuário
-  });
+  const TelaTeste({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tela de Teste'),
-        automaticallyImplyLeading: false, // Opcional: Remove a seta de voltar
-      ),
+      appBar: AppBar(title: const Text('Tela Inicial')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -26,7 +19,6 @@ class TelaTeste extends StatelessWidget {
               style: TextStyle(fontSize: 24, color: Colors.grey),
             ),
             const SizedBox(height: 10),
-            // Exibe o nome do usuário que foi passado
             Text(
               userName,
               style: const TextStyle(
@@ -36,13 +28,14 @@ class TelaTeste extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 40),
-            // Botão de exemplo para sair
             ElevatedButton(
               onPressed: () {
-                // Navega de volta para a tela de login (ou para o início)
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Login()),
+                );
               },
-              child: const Text('Sair / Voltar'),
+              child: const Text('Sair'),
             ),
           ],
         ),
