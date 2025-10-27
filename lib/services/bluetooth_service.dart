@@ -26,14 +26,19 @@ class BluetoothService with ChangeNotifier {
       if (await FlutterBluePlus.isSupported) {
         await FlutterBluePlus.turnOn();
         await FlutterBluePlus.startScan(timeout: const Duration(seconds: 4));
-        FlutterBluePlus.scanResults.listen((results) {
-          for (ScanResult r in results) {
-            logger.i('Dispositivo encontrado: ${r.device.platformName} (${r.device.remoteId})');
-            _saveDevice(r.device);
-          }
-        }, onError: (e) {
-          logger.e('Erro no scan: $e');
-        });
+        FlutterBluePlus.scanResults.listen(
+          (results) {
+            for (ScanResult r in results) {
+              logger.i(
+                'Dispositivo encontrado: ${r.device.platformName} (${r.device.remoteId})',
+              );
+              _saveDevice(r.device);
+            }
+          },
+          onError: (e) {
+            logger.e('Erro no scan: $e');
+          },
+        );
       } else {
         logger.i('Bluetooth não suportado neste dispositivo');
       }
@@ -41,25 +46,25 @@ class BluetoothService with ChangeNotifier {
       logger.e('Erro durante inicialização: $e');
     } finally {
       _isLoading = false;
-      notifyListeners(); 
+      notifyListeners();
     }
   }
 
   Future<void> _saveDevice(BluetoothDevice device) async {
     final db = await _dbChat.database;
     final platformName = device.platformName;
-    await db.insert(
-      'users',
-      {
-        'email': 'desconhecido',
-        'password': '',
-        'name': 'Usuário Desconhecido',
-        'bluetoothName': platformName ?? 'Dispositivo Sem Nome',
-        'bluetoothIdentifier': device.remoteId.toString(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
+    await db.insert('users', {
+      'email': 'desconhecido',
+      'password': '',
+      'name': 'Usuário Desconhecido',
+      'bluetoothName': platformName.isNotEmpty
+          ? platformName
+          : 'Dispositivo Sem Nome',
+      'bluetoothIdentifier': device.remoteId.toString(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    logger.i(
+      'Dispositivo salvo: ${platformName.isNotEmpty ? platformName : 'Dispositivo Sem Nome'}',
     );
-    logger.i('Dispositivo salvo: ${platformName ?? 'Dispositivo Sem Nome'}');
   }
 
   Future<void> _requestPermissions() async {
