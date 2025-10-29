@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthController {
   final UserController _userController = UserController();
 
-  // Salva credenciais (email + senha)
   Future<void> _saveCredentials(String email, String password) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('saved_email', email);
@@ -19,7 +18,6 @@ class AuthController {
     await prefs.remove('saved_password');
   }
 
-  // Carrega credenciais salvas
   Future<Map<String, String>?> getSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('saved_email');
