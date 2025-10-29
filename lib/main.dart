@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat_de_conversa/services/database_chat.dart';
-import 'package:chat_de_conversa/services/bluetooth_service.dart'; 
+import 'package:chat_de_conversa/services/bluetooth_service.dart';
 import 'package:chat_de_conversa/views/tela_inicial.dart';
 import 'package:chat_de_conversa/views/login.dart';
+import 'package:chat_de_conversa/views/principal.dart'; 
+import 'package:chat_de_conversa/controllers/auth_controller.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,15 +42,42 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
       final bool hasCompletedOnboarding =
           prefs.getBool('onboarding_completed') ?? false;
 
+      if (!hasCompletedOnboarding) {
+        setState(() {
+          _initialScreen = const TelaInicialApp();
+        });
+        return;
+      }
+
+      final authController = AuthController();
+      final savedCredentials = await authController.getSavedCredentials();
+
+      if (savedCredentials != null) {
+        final email = savedCredentials['email']!;
+        final password = savedCredentials['password']!;
+
+        final result = await authController.loginUser(
+          email: email,
+          password: password,
+          rememberMe: true,
+        );
+
+        if (result['success']) {
+          final userName = result['name'] ?? 'Usuário';
+          setState(() {
+            _initialScreen = TelaTeste(userName: userName);
+          });
+          return;
+        }
+      }
+
       setState(() {
-        _initialScreen = hasCompletedOnboarding
-            ? const Login()
-            : const TelaInicialApp();
+        _initialScreen = const Login();
       });
     } catch (e) {
-      print('Erro ao verificar onboarding: $e');
+      print('Erro ao verificar fluxo inicial: $e');
       setState(() {
-        _initialScreen = const TelaInicialApp();
+        _initialScreen = const Login();
       });
     }
   }

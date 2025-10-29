@@ -15,13 +15,24 @@ class _LoginScreenState extends State<Login> {
   final _passwordController = TextEditingController();
   final AuthController _authController = AuthController();
   bool _obscureText = true;
+  bool _rememberMe = false;
   String _errorMessage = '';
 
   @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final credentials = await _authController.getSavedCredentials();
+    if (credentials != null) {
+      setState(() {
+        _emailController.text = credentials['email']!;
+        _passwordController.text = credentials['password']!;
+        _rememberMe = true;
+      });
+    }
   }
 
   void _handleLogin() async {
@@ -32,6 +43,7 @@ class _LoginScreenState extends State<Login> {
     final result = await _authController.loginUser(
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      rememberMe: _rememberMe,
     );
 
     if (result['success']) {
@@ -47,6 +59,13 @@ class _LoginScreenState extends State<Login> {
         _errorMessage = result['message'];
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,6 +90,7 @@ class _LoginScreenState extends State<Login> {
               style: TextStyle(fontSize: 16, color: Colors.grey[800]),
             ),
             const SizedBox(height: 40),
+
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -80,13 +100,14 @@ class _LoginScreenState extends State<Login> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  borderSide: BorderSide(color: primaryColor),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 30),
+
             TextField(
               controller: _passwordController,
               obscureText: _obscureText,
@@ -97,13 +118,13 @@ class _LoginScreenState extends State<Login> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                  borderSide: BorderSide(color: primaryColor),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
                     _obscureText ? Icons.visibility : Icons.visibility_off,
-                    color: Theme.of(context).primaryColor,
+                    color: primaryColor,
                   ),
                   onPressed: () {
                     setState(() {
@@ -114,12 +135,27 @@ class _LoginScreenState extends State<Login> {
               ),
             ),
 
+            Row(
+              children: [
+                Checkbox(
+                  value: _rememberMe,
+                  activeColor: primaryColor,
+                  onChanged: (value) {
+                    setState(() {
+                      _rememberMe = value ?? false;
+                    });
+                  },
+                ),
+                const Text('Lembrar-me'),
+              ],
+            ),
+
             if (_errorMessage.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Text(
                   _errorMessage,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.bold,
                   ),
@@ -128,6 +164,7 @@ class _LoginScreenState extends State<Login> {
               ),
 
             const SizedBox(height: 10),
+
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton(
@@ -138,15 +175,17 @@ class _LoginScreenState extends State<Login> {
                 },
                 child: Text(
                   'Esqueceu a senha?',
-                  style: TextStyle(color: Theme.of(context).primaryColor),
+                  style: TextStyle(color: primaryColor),
                 ),
               ),
             ),
+
             const SizedBox(height: 10),
+
             ElevatedButton(
               onPressed: _handleLogin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -162,7 +201,9 @@ class _LoginScreenState extends State<Login> {
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
+
             TextButton(
               onPressed: () {
                 Navigator.push(
