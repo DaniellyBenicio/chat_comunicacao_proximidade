@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat_de_conversa/services/database_chat.dart';
 import 'package:chat_de_conversa/services/bluetooth_service.dart';
-import 'package:chat_de_conversa/views/tela_inicial.dart';
+import 'package:chat_de_conversa/views/home_screen.dart';
 import 'package:chat_de_conversa/views/login.dart';
-import 'package:chat_de_conversa/views/principal.dart'; 
-import 'package:chat_de_conversa/controllers/auth_controller.dart'; 
+import 'package:chat_de_conversa/views/conversations.dart';
+import 'package:chat_de_conversa/controllers/auth_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +44,7 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
 
       if (!hasCompletedOnboarding) {
         setState(() {
-          _initialScreen = const TelaInicialApp();
+          _initialScreen = const HomeScreen();
         });
         return;
       }
@@ -65,7 +65,7 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
         if (result['success']) {
           final userName = result['name'] ?? 'Usuário';
           setState(() {
-            _initialScreen = TelaTeste(userName: userName);
+            _initialScreen = Conversations(userName: userName);
           });
           return;
         }

@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:chat_de_conversa/services/bluetooth_service.dart';
 
-class TelaInicialApp extends StatefulWidget {
-  const TelaInicialApp({super.key});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  _TelaInicialAppState createState() => _TelaInicialAppState();
+  _HomeScreenAppState createState() => _HomeScreenAppState();
 }
 
-class _TelaInicialAppState extends State<TelaInicialApp> {
+class _HomeScreenAppState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
@@ -70,7 +70,8 @@ class _TelaInicialAppState extends State<TelaInicialApp> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const OnboardingScreen(),
+                                    builder: (context) =>
+                                        const OnboardingScreen(),
                                   ),
                                 );
                               },

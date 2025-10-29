@@ -1,6 +1,7 @@
+import 'package:chat_de_conversa/widgets/nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'register.dart';
-import 'principal.dart';
+import 'conversations.dart';
 import '../controllers/auth_controller.dart';
 
 class Login extends StatefulWidget {
@@ -51,7 +52,7 @@ class _LoginScreenState extends State<Login> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => TelaTeste(userName: loggedInUserName),
+          builder: (context) => BottomNavBar(userName: loggedInUserName),
         ),
       );
     } else {
