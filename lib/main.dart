@@ -14,7 +14,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final dbHelper = DatabaseChat();
-  await dbHelper.database;
+  dbHelper.database;
 
   runApp(const ChatProximidadeApp());
 }
@@ -137,7 +137,7 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
             themeMode: themeProvider.themeMode,
             home: _initialScreen,
           );
-        }, 
+        },
       ),
     );
   }

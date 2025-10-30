@@ -74,7 +74,7 @@ class BluetoothService with ChangeNotifier {
       Permission.bluetooth,
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
-      //Permission.location,
+      Permission.location,
     ].request();
 
     if (statuses.values.any((status) => !status.isGranted)) {

@@ -81,24 +81,7 @@ class _ConversationsState extends State<Conversations> {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: _bluetoothOn ? Colors.green : Colors.red,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _bluetoothOn
-                                  ? 'Disponível via Bluetooth'
-                                  : 'Bluetooth desligado',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
-                              ),
-                            ),
+                            BluetoothStatusIndicator(isOn: _bluetoothOn),
                           ],
                         ),
                       ],
@@ -180,8 +163,7 @@ class _ConversationsState extends State<Conversations> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 trailing: const Icon(Icons.chevron_right),
-                                onTap: () {
-                                },
+                                onTap: () {},
                               ),
                             );
                           },
@@ -190,6 +172,33 @@ class _ConversationsState extends State<Conversations> {
               ],
             ),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class BluetoothStatusIndicator extends StatelessWidget {
+  final bool isOn;
+
+  const BluetoothStatusIndicator({super.key, required this.isOn});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: isOn ? Colors.green : Colors.red,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          isOn ? 'Disponível via Bluetooth' : 'Bluetooth desligado',
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
         ),
       ],
     );
