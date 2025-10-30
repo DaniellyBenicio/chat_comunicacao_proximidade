@@ -6,8 +6,9 @@ import 'package:chat_de_conversa/services/database_chat.dart';
 import 'package:chat_de_conversa/services/bluetooth_service.dart';
 import 'package:chat_de_conversa/views/home_screen.dart';
 import 'package:chat_de_conversa/views/login.dart';
-import 'package:chat_de_conversa/views/conversations.dart';
 import 'package:chat_de_conversa/controllers/auth_controller.dart';
+// Importação do seu menu inferior
+import 'package:chat_de_conversa/widgets/nav_bar.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,7 @@ class ChatProximidadeApp extends StatefulWidget {
 }
 
 class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
+  // Variável de estado para a tela inicial
   Widget _initialScreen = const Scaffold(
     body: Center(child: CircularProgressIndicator(color: Color(0xFF004E89))),
   );
@@ -65,7 +67,8 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
         if (result['success']) {
           final userName = result['name'] ?? 'Usuário';
           setState(() {
-            _initialScreen = Conversations(userName: userName);
+            // CORRIGIDO: Usando '_initialScreen' e 'BottomNavBar'
+            _initialScreen = BottomNavBar(userName: userName); 
           });
           return;
         }
