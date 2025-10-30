@@ -1,6 +1,8 @@
+import 'package:chat_de_conversa/styles/message_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
+/// VIEW: BLUETOOTH DESLIGADO
 class BluetoothOffView extends StatelessWidget {
   const BluetoothOffView({super.key});
 
@@ -28,6 +30,7 @@ class BluetoothOffView extends StatelessWidget {
   }
 }
 
+/// VIEW: BLUETOOTH LIGADO
 class BluetoothOnView extends StatefulWidget {
   const BluetoothOnView({super.key});
 
@@ -38,6 +41,7 @@ class BluetoothOnView extends StatefulWidget {
 class _BluetoothOnViewState extends State<BluetoothOnView> {
   List<BluetoothDiscoveryResult> _devicesList = [];
   bool _isDiscovering = false;
+  String? _pairingDeviceAddress;
 
   @override
   void initState() {
@@ -53,23 +57,50 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
 
     FlutterBluetoothSerial.instance
         .startDiscovery()
-        .listen((r) {
+        .listen((result) {
           setState(() {
-            final existingIndex = _devicesList.indexWhere(
-              (element) => element.device.address == r.device.address,
+            final index = _devicesList.indexWhere(
+              (e) => e.device.address == result.device.address,
             );
-            if (existingIndex >= 0) {
-              _devicesList[existingIndex] = r;
+            if (index >= 0) {
+              _devicesList[index] = result;
             } else {
-              _devicesList.add(r);
+              _devicesList.add(result);
             }
           });
         })
         .onDone(() {
-          setState(() {
-            _isDiscovering = false;
-          });
+          setState(() => _isDiscovering = false);
         });
+  }
+
+  Future<void> _pairDevice(BuildContext context, BluetoothDevice device) async {
+    setState(() => _pairingDeviceAddress = device.address);
+
+    try {
+      final bonded =
+          (await FlutterBluetoothSerial.instance.bondDeviceAtAddress(
+            device.address,
+          )) ??
+          false;
+
+      if (bonded) {
+        showCustomSnackBar(
+          context,
+          'Pareamento bem-sucedido com ${device.name ?? "dispositivo"}',
+        );
+      } else {
+        showCustomSnackBar(
+          context,
+          'Falha ao parear com ${device.name ?? "dispositivo"}',
+          isError: true,
+        );
+      }
+    } catch (e) {
+      showCustomSnackBar(context, 'Erro ao tentar parear: $e', isError: true);
+    } finally {
+      setState(() => _pairingDeviceAddress = null);
+    }
   }
 
   @override
@@ -136,14 +167,11 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
                     itemCount: _devicesList.length,
                     itemBuilder: (context, index) {
                       final result = _devicesList[index];
-                      final device = result.device;
-                      return ListTile(
-                        leading: const Icon(
-                          Icons.devices,
-                          color: Color(0xFF004E89),
-                        ),
-                        title: Text(device.name ?? "Sem nome"),
-                        subtitle: Text(device.address),
+                      return DeviceTile(
+                        result: result,
+                        isPairing:
+                            _pairingDeviceAddress == result.device.address,
+                        onPair: () => _pairDevice(context, result.device),
                       );
                     },
                   ),
@@ -172,6 +200,71 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
     );
   }
 }
+
+
+class DeviceTile extends StatelessWidget {
+  final BluetoothDiscoveryResult result;
+  final bool isPairing;
+  final VoidCallback onPair;
+
+  const DeviceTile({
+    super.key,
+    required this.result,
+    required this.isPairing,
+    required this.onPair,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final device = result.device;
+
+    Color statusColor;
+    String statusText;
+
+    if (device.isConnected == true) {
+      statusColor = Colors.green;
+      statusText = 'Conectado';
+    } else if (device.isBonded) {
+      statusColor = Colors.blue;
+      statusText = 'Pareado';
+    } else {
+      statusColor = Colors.grey;
+      statusText = 'Não pareado';
+    }
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: Icon(Icons.devices, color: statusColor),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              device.name ?? "Sem nome",
+              style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+            ),
+            if (isPairing)
+              const Padding(
+                padding: EdgeInsets.only(top: 4.0),
+                child: Text(
+                  'Pareando...',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        subtitle: Text('${device.address}\n$statusText'),
+        isThreeLine: true,
+        onTap: device.isBonded ? null : onPair,
+      ),
+    );
+  }
+}
+
 
 class SearchDevices extends StatefulWidget {
   const SearchDevices({super.key});
@@ -211,8 +304,8 @@ class _SearchDevicesState extends State<SearchDevices> {
       builder: (_) => AlertDialog(
         title: const Text('Desligar Bluetooth'),
         content: const Text(
-          'Por questões de segurança, o app não pode desligar o Bluetooth automaticamente.\n\n'
-          'Por favor, desligue manualmente nas Configurações do dispositivo.',
+          'Por segurança, o app não pode desligar o Bluetooth automaticamente.\n\n'
+          'Desligue manualmente nas configurações do dispositivo.',
         ),
         actions: [
           TextButton(
