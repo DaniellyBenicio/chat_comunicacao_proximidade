@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chat_de_conversa/views/conversations.dart';
-import 'package:chat_de_conversa/views/bluetooth_device.dart'; // Certifique-se de importar
+import 'package:chat_de_conversa/views/bluetooth_device.dart';
+import 'package:chat_de_conversa/views/settings.dart';
 
 class BottomNavBar extends StatefulWidget {
   final String userName;
@@ -24,13 +25,12 @@ class _BottomNavBarState extends State<BottomNavBar> {
       // ABA 1: Tela de Bluetooth (Procurar)
       const SearchDevices(), 
       // ABA 2: Configurações
-      const Center(child: Text('Tela de Configurações')), 
+      const SettingsScreen(), 
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    // O Scaffold principal agora CONTÉM a navegação e o menu.
     return Scaffold(
       body: IndexedStack(index: _indiceAtual, children: _telas),
       bottomNavigationBar: BottomNavigationBar(
@@ -40,7 +40,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
             _indiceAtual = indice;
           });
         },
-        backgroundColor: Colors.white,
         selectedItemColor: const Color(0xFF004E89),
         unselectedItemColor: Colors.grey,
         elevation: 10,
@@ -48,7 +47,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Conversas'),
           BottomNavigationBarItem(
             icon: Icon(Icons.bluetooth_searching),
-            label: 'Procurar', // Alterado de 'Bluetooth' para 'Procurar'
+            label: 'Procurar',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

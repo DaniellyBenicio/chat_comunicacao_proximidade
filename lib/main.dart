@@ -7,8 +7,8 @@ import 'package:chat_de_conversa/services/bluetooth_service.dart';
 import 'package:chat_de_conversa/views/home_screen.dart';
 import 'package:chat_de_conversa/views/login.dart';
 import 'package:chat_de_conversa/controllers/auth_controller.dart';
-// Importação do seu menu inferior
-import 'package:chat_de_conversa/widgets/nav_bar.dart'; 
+import 'package:chat_de_conversa/widgets/nav_bar.dart';
+import 'package:chat_de_conversa/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +27,6 @@ class ChatProximidadeApp extends StatefulWidget {
 }
 
 class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
-  // Variável de estado para a tela inicial
   Widget _initialScreen = const Scaffold(
     body: Center(child: CircularProgressIndicator(color: Color(0xFF004E89))),
   );
@@ -67,8 +66,7 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
         if (result['success']) {
           final userName = result['name'] ?? 'Usuário';
           setState(() {
-            // CORRIGIDO: Usando '_initialScreen' e 'BottomNavBar'
-            _initialScreen = BottomNavBar(userName: userName); 
+            _initialScreen = BottomNavBar(userName: userName);
           });
           return;
         }
@@ -85,22 +83,61 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
     }
   }
 
+  // TEMAS
+  final ThemeData _lightTheme = ThemeData(
+    scaffoldBackgroundColor: const Color(0xFFF7F9FC),
+    primaryColor: const Color(0xFF004E89),
+    secondaryHeaderColor: const Color(0xFF000000),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFF004E89),
+      brightness: Brightness.light,
+    ),
+    textTheme: GoogleFonts.poppinsTextTheme(),
+    useMaterial3: true,
+    brightness: Brightness.light,
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Colors.white,
+      selectedItemColor: Color(0xFF004E89),
+      unselectedItemColor: Colors.grey,
+    ),
+  );
+
+  final ThemeData _darkTheme = ThemeData(
+    scaffoldBackgroundColor: const Color(0xFF121212),
+    primaryColor: const Color(0xFF004E89),
+    secondaryHeaderColor: const Color(0xFFFFFFFF),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color(0xFF004E89),
+      brightness: Brightness.dark,
+    ),
+    textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: Color(0xFF1E1E1E),
+      selectedItemColor: Color(0xFF004E89),
+      unselectedItemColor: Colors.grey,
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => BluetoothService(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'GeoTalk',
-        theme: ThemeData(
-          scaffoldBackgroundColor: const Color(0xFFF7F9FC),
-          primaryColor: const Color(0xFF004E89),
-          secondaryHeaderColor: const Color(0xFF000000),
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF004E89)),
-          textTheme: GoogleFonts.poppinsTextTheme(),
-          useMaterial3: true,
-        ),
-        home: _initialScreen,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => BluetoothService()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'GeoTalk',
+            theme: _lightTheme,
+            darkTheme: _darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: _initialScreen,
+          );
+        }, 
       ),
     );
   }
