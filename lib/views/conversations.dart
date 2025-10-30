@@ -1,9 +1,6 @@
-import 'package:chat_de_conversa/views/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
-// O widget principal (Conversations) será usado como a ABA 0 do menu.
-// Ele precisa ser um StatefulWidget para gerenciar o estado do Bluetooth.
 class Conversations extends StatefulWidget {
   final String userName;
 
@@ -15,6 +12,8 @@ class Conversations extends StatefulWidget {
 
 class _ConversationsState extends State<Conversations> {
   bool _bluetoothOn = false;
+
+  final List<Map<String, String>> _conversations = [];
 
   @override
   void initState() {
@@ -38,33 +37,35 @@ class _ConversationsState extends State<Conversations> {
 
   @override
   Widget build(BuildContext context) {
-    // Retorna APENAS o corpo e o AppBar, SEM o Scaffold.
-    // O Scaffold será fornecido pelo BottomNavBar.
-
-    return Column( // Use Column como o widget principal, pois é o conteúdo do Body
+    return Column(
       children: [
-        // Adiciona o AppBar como um widget regular, mas com um Container para estilizá-lo
         AppBar(
-          title: const Text('Tela Inicial'),
           automaticallyImplyLeading: false,
+          title: const Text(
+            'Conversas',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
+          ),
+          centerTitle: true,
+          elevation: 2,
         ),
-        
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Seu código de Avatar/Status/Busca aqui
                 Row(
                   children: [
                     CircleAvatar(
                       radius: 24,
+                      backgroundColor: const Color(0xFF004E89),
                       child: Text(
                         widget.userName[0].toUpperCase(),
-                        style: const TextStyle(fontSize: 24, color: Colors.white),
+                        style: const TextStyle(
+                          fontSize: 24,
+                          color: Colors.white,
+                        ),
                       ),
-                      backgroundColor: const Color(0xFF004E89),
                     ),
                     const SizedBox(width: 12),
                     Column(
@@ -104,29 +105,88 @@ class _ConversationsState extends State<Conversations> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 30),
+
                 const TextField(
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.search),
-                    hintText: 'Buscar minhas conexões...',
+                    hintText: 'Buscar minhas conversas...',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                     ),
                   ),
                 ),
+
                 const SizedBox(height: 30),
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const Login()),
-                      );
-                    },
-                    child: const Text('Sair'),
-                  ),
+
+                Expanded(
+                  child: _conversations.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Icon(
+                                Icons.chat_bubble_outline,
+                                size: 60,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Nenhuma conversa encontrada',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Se conecte com alguém para iniciar.',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: _conversations.length,
+                          itemBuilder: (context, index) {
+                            final convo = _conversations[index];
+                            return Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 3,
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: const Color(0xFF004E89),
+                                  child: Text(
+                                    convo['name']![0].toUpperCase(),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                                title: Text(
+                                  convo['name']!,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  convo['lastMessage'] ?? '',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () {
+                                },
+                              ),
+                            );
+                          },
+                        ),
                 ),
-                // O restante do conteúdo da aba de conversas
               ],
             ),
           ),

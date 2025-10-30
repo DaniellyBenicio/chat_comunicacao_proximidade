@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
-/// --- Tela exibida quando o Bluetooth está DESLIGADO ---
 class BluetoothOffView extends StatelessWidget {
   const BluetoothOffView({super.key});
 
@@ -29,7 +28,6 @@ class BluetoothOffView extends StatelessWidget {
   }
 }
 
-/// --- Tela exibida quando o Bluetooth está LIGADO ---
 class BluetoothOnView extends StatefulWidget {
   const BluetoothOnView({super.key});
 
@@ -53,21 +51,25 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
       _isDiscovering = true;
     });
 
-    FlutterBluetoothSerial.instance.startDiscovery().listen((r) {
-      setState(() {
-        final existingIndex = _devicesList.indexWhere(
-            (element) => element.device.address == r.device.address);
-        if (existingIndex >= 0) {
-          _devicesList[existingIndex] = r;
-        } else {
-          _devicesList.add(r);
-        }
-      });
-    }).onDone(() {
-      setState(() {
-        _isDiscovering = false;
-      });
-    });
+    FlutterBluetoothSerial.instance
+        .startDiscovery()
+        .listen((r) {
+          setState(() {
+            final existingIndex = _devicesList.indexWhere(
+              (element) => element.device.address == r.device.address,
+            );
+            if (existingIndex >= 0) {
+              _devicesList[existingIndex] = r;
+            } else {
+              _devicesList.add(r);
+            }
+          });
+        })
+        .onDone(() {
+          setState(() {
+            _isDiscovering = false;
+          });
+        });
   }
 
   @override
@@ -78,7 +80,7 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Nome do dispositivo local',
+            'Nome do meu dispositivo',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
@@ -87,8 +89,10 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
             builder: (context, snapshot) {
               final localName = snapshot.data ?? "Desconhecido";
               return Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(8),
@@ -125,7 +129,7 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
                 ? const Center(
                     child: Text(
                       'Nenhum dispositivo encontrado.',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(fontSize: 18, color: Colors.grey),
                     ),
                   )
                 : ListView.builder(
@@ -134,8 +138,10 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
                       final result = _devicesList[index];
                       final device = result.device;
                       return ListTile(
-                        leading: const Icon(Icons.devices,
-                            color: Color(0xFF004E89)),
+                        leading: const Icon(
+                          Icons.devices,
+                          color: Color(0xFF004E89),
+                        ),
                         title: Text(device.name ?? "Sem nome"),
                         subtitle: Text(device.address),
                       );
@@ -167,7 +173,6 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
   }
 }
 
-/// --- Tela principal de Bluetooth ---
 class SearchDevices extends StatefulWidget {
   const SearchDevices({super.key});
 
@@ -196,7 +201,6 @@ class _SearchDevicesState extends State<SearchDevices> {
     if (value) {
       await FlutterBluetoothSerial.instance.requestEnable();
     } else {
-      // Android 12+ não permite desligar o Bluetooth diretamente
       _showDisableAlert();
     }
   }
@@ -230,8 +234,13 @@ class _SearchDevicesState extends State<SearchDevices> {
     return Column(
       children: [
         AppBar(
-          title: Text(isBluetoothOn ? 'Opções' : 'Tela login'),
-          elevation: 0,
+          automaticallyImplyLeading: false,
+          title: const Text(
+            'Conexões',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
+          ),
+          centerTitle: true,
+          elevation: 2,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

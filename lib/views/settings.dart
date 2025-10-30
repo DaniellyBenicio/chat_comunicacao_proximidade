@@ -9,8 +9,13 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Configurações'),
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'Configurações',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
+        ),
+        centerTitle: true,
+        elevation: 2,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -19,7 +24,9 @@ class SettingsScreen extends StatelessWidget {
             builder: (context, themeProvider, child) {
               return SwitchListTile(
                 title: const Text('Modo Escuro'),
-                subtitle: Text(themeProvider.isDarkMode ? 'Ativado' : 'Desativado'),
+                subtitle: Text(
+                  themeProvider.isDarkMode ? 'Ativado' : 'Desativado',
+                ),
                 value: themeProvider.isDarkMode,
                 onChanged: (value) {
                   themeProvider.toggleTheme(value);
