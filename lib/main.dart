@@ -7,7 +7,7 @@ import 'package:chat_de_conversa/services/bluetooth_service.dart';
 import 'package:chat_de_conversa/views/home_screen.dart';
 import 'package:chat_de_conversa/views/login.dart';
 import 'package:chat_de_conversa/controllers/auth_controller.dart';
-import 'package:chat_de_conversa/widgets/nav_bar.dart';
+import 'package:chat_de_conversa/components/nav_bar.dart';
 import 'package:chat_de_conversa/providers/theme_provider.dart';
 
 void main() async {

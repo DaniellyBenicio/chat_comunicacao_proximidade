@@ -1,4 +1,4 @@
-import 'package:chat_de_conversa/widgets/nav_bar.dart';
+import 'package:chat_de_conversa/components/nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'register.dart';
 import 'conversations.dart';
