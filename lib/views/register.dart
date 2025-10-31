@@ -190,7 +190,13 @@ class _RegisterState extends State<Register> {
 
                 TextFormField(
                   controller: _nameController,
-                  validator: (value) => _validateRequired(value, 'Nome'),
+                  validator: (value) {
+                    _validateRequired(value, 'Nome');
+                    if (value!.trim().length < 3) {
+                      return 'O nome deve ter no mínimo 3 caracteres.';
+                    }
+                    return null;
+                  },
                   decoration: InputDecoration(
                     labelText: 'Nome',
                     prefixIcon: Icon(Icons.person, color: primaryColor),
@@ -206,7 +212,14 @@ class _RegisterState extends State<Register> {
 
                 TextFormField(
                   controller: _emailController,
-                  validator: (value) => _validateRequired(value, 'E-mail'),
+                  validator: (value) {
+                    _validateRequired(value, 'E-mail');
+                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                    if (!emailRegex.hasMatch(value!)) {
+                      return 'O e-mail fornecido não é válido.';
+                    }
+                    return null;
+                  },
                   decoration: InputDecoration(
                     labelText: 'E-mail',
                     prefixIcon: Icon(Icons.email, color: primaryColor),

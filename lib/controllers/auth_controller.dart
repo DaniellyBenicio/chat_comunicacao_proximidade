@@ -18,6 +18,10 @@ class AuthController {
     await prefs.remove('saved_password');
   }
 
+  Future<void> logout() async {
+    await _clearCredentials();
+  }
+
   Future<Map<String, String>?> getSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('saved_email');

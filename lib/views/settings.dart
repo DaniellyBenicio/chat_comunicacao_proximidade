@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:chat_de_conversa/providers/theme_provider.dart';
+import 'package:chat_de_conversa/views/login.dart';
+import 'package:chat_de_conversa/controllers/auth_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+
+  Future<void> _logout(BuildContext context) async {
+    final authController = AuthController();
+    await authController.logout();
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Login()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +56,12 @@ class SettingsScreen extends StatelessWidget {
             title: const Text('Versão do App'),
             subtitle: const Text('1.0.0'),
             onTap: () {},
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Sair', style: TextStyle(color: Colors.red)),
+            onTap: () => _logout(context),
           ),
         ],
       ),
