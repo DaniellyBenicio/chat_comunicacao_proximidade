@@ -2,7 +2,6 @@ import 'package:chat_de_conversa/styles/message_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
-/// VIEW: BLUETOOTH DESLIGADO
 class BluetoothOffView extends StatelessWidget {
   const BluetoothOffView({super.key});
 
@@ -30,7 +29,6 @@ class BluetoothOffView extends StatelessWidget {
   }
 }
 
-/// VIEW: BLUETOOTH LIGADO
 class BluetoothOnView extends StatefulWidget {
   const BluetoothOnView({super.key});
 
@@ -85,6 +83,24 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
           false;
 
       if (bonded) {
+        setState(() {
+          final index = _devicesList.indexWhere(
+            (d) => d.device.address == device.address,
+          );
+          if (index >= 0) {
+            final updatedDevice = BluetoothDevice(
+              name: device.name,
+              address: device.address,
+              type: device.type,
+              bondState: BluetoothBondState.bonded,
+            );
+            _devicesList[index] = BluetoothDiscoveryResult(
+              device: updatedDevice,
+              rssi: _devicesList[index].rssi,
+            );
+          }
+        });
+
         showCustomSnackBar(
           context,
           'Pareamento bem-sucedido com ${device.name ?? "dispositivo"}',
@@ -201,8 +217,7 @@ class _BluetoothOnViewState extends State<BluetoothOnView> {
   }
 }
 
-
-class DeviceTile extends StatelessWidget {
+class DeviceTile extends StatefulWidget {
   final BluetoothDiscoveryResult result;
   final bool isPairing;
   final VoidCallback onPair;
@@ -215,13 +230,48 @@ class DeviceTile extends StatelessWidget {
   });
 
   @override
+  State<DeviceTile> createState() => _DeviceTileState();
+}
+
+class _DeviceTileState extends State<DeviceTile> {
+  bool _isConnected = false;
+
+  void _connectDevice(BuildContext context) async {
+    setState(() => _isConnected = true);
+    showCustomSnackBar(context, 'Conectado com sucesso!');
+  }
+
+  void _disconnectDevice(BuildContext context) async {
+    setState(() => _isConnected = false);
+    showCustomSnackBar(context, 'Desconectado do dispositivo.');
+  }
+
+  void _talkFeature(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Conversar'),
+        content: const Text(
+          'Essa funcionalidade será implementada posteriormente.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final device = result.device;
+    final device = widget.result.device;
 
     Color statusColor;
     String statusText;
 
-    if (device.isConnected == true) {
+    if (_isConnected) {
       statusColor = Colors.green;
       statusText = 'Conectado';
     } else if (device.isBonded) {
@@ -235,36 +285,100 @@ class DeviceTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: Icon(Icons.devices, color: statusColor),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              device.name ?? "Sem nome",
-              style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
-            ),
-            if (isPairing)
-              const Padding(
-                padding: EdgeInsets.only(top: 4.0),
-                child: Text(
-                  'Pareando...',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0),
+        child: ListTile(
+          leading: Icon(Icons.devices, color: statusColor),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                device.name ?? "Sem nome",
+                style: TextStyle(
+                  color: statusColor,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-          ],
+              if (widget.isPairing)
+                const Padding(
+                  padding: EdgeInsets.only(top: 4.0),
+                  child: Text(
+                    'Pareando...',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${device.address}\n$statusText'),
+              const SizedBox(height: 8),
+              _buildActionButtons(context, device),
+            ],
+          ),
+          isThreeLine: true,
+          onTap: device.isBonded ? null : widget.onPair,
         ),
-        subtitle: Text('${device.address}\n$statusText'),
-        isThreeLine: true,
-        onTap: device.isBonded ? null : onPair,
       ),
     );
   }
-}
 
+  Widget _buildActionButtons(BuildContext context, BluetoothDevice device) {
+    if (device.isBonded && !_isConnected) {
+      return ElevatedButton.icon(
+        onPressed: () => _connectDevice(context),
+        icon: const Icon(Icons.link, color: Colors.white),
+        label: const Text('Conectar', style: TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    } else if (_isConnected) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ElevatedButton.icon(
+            onPressed: () => _talkFeature(context),
+            icon: const Icon(Icons.chat, color: Colors.white),
+            label: const Text(
+              'Conversar',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          ElevatedButton.icon(
+            onPressed: () => _disconnectDevice(context),
+            icon: const Icon(Icons.link_off, color: Colors.white),
+            label: const Text(
+              'Desconectar',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}
 
 class SearchDevices extends StatefulWidget {
   const SearchDevices({super.key});
