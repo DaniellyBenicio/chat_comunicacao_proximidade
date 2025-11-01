@@ -14,7 +14,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final dbHelper = DatabaseChat();
-  dbHelper.database;
+  await dbHelper.database; 
 
   runApp(const ChatProximidadeApp());
 }
@@ -51,24 +51,25 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
       }
 
       final authController = AuthController();
-      final savedCredentials = await authController.getSavedCredentials();
 
-      if (savedCredentials != null) {
-        final email = savedCredentials['email']!;
-        final password = savedCredentials['password']!;
+      final bool isLoggedIn = await authController.isLoggedIn();
 
-        final result = await authController.loginUser(
-          email: email,
-          password: password,
-          rememberMe: true,
-        );
+      if (isLoggedIn) {
+        final savedCredentials = await authController.getSavedCredentials();
+        if (savedCredentials != null) {
+          final result = await authController.loginUser(
+            email: savedCredentials['email']!,
+            password: savedCredentials['password']!,
+            rememberMe: true,
+          );
 
-        if (result['success']) {
-          final userName = result['name'] ?? 'Usuário';
-          setState(() {
-            _initialScreen = BottomNavBar(userName: userName);
-          });
-          return;
+          if (result['success']) {
+            final userName = result['name'] ?? 'Usuário';
+            setState(() {
+              _initialScreen = BottomNavBar(userName: userName);
+            });
+            return;
+          }
         }
       }
 

@@ -1,11 +1,11 @@
 import 'package:chat_de_conversa/components/nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'register.dart';
-import 'conversations.dart';
 import '../controllers/auth_controller.dart';
 
 class Login extends StatefulWidget {
-  const Login({super.key});
+  final Map<String, String>? preloadedCredentials;
+  const Login({super.key, this.preloadedCredentials});
 
   @override
   State<Login> createState() => _LoginScreenState();
@@ -26,6 +26,17 @@ class _LoginScreenState extends State<Login> {
   }
 
   Future<void> _loadSavedCredentials() async {
+    // Primeiro: tenta usar as credenciais passadas pelo main.dart
+    if (widget.preloadedCredentials != null) {
+      setState(() {
+        _emailController.text = widget.preloadedCredentials!['email']!;
+        _passwordController.text = widget.preloadedCredentials!['password']!;
+        _rememberMe = true;
+      });
+      return;
+    }
+
+    // Segundo: tenta carregar do SharedPreferences
     final credentials = await _authController.getSavedCredentials();
     if (credentials != null) {
       setState(() {

@@ -10,25 +10,40 @@ class AuthController {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('saved_email', email);
     await prefs.setString('saved_password', password);
+    await prefs.setBool('remember_me', true);
+    log('Credenciais salvas + remember_me = true');
   }
 
-  Future<void> _clearCredentials() async {
+  Future<void> _setLoggedIn(bool value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('saved_email');
-    await prefs.remove('saved_password');
+    await prefs.setBool('is_logged_in', value);
   }
 
   Future<void> logout() async {
-    await _clearCredentials();
+    await _setLoggedIn(false);
+    log('Logout: sessão encerrada, credenciais mantidas');
+  }
+
+  Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('is_logged_in') ?? false;
+  }
+
+  Future<bool> isRememberMeEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('remember_me') ?? false;
   }
 
   Future<Map<String, String>?> getSavedCredentials() async {
     final prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString('saved_email');
-    final password = prefs.getString('saved_password');
+    final rememberMe = prefs.getBool('remember_me') ?? false;
 
-    if (email != null && password != null) {
-      return {'email': email, 'password': password};
+    if (rememberMe) {
+      final email = prefs.getString('saved_email');
+      final password = prefs.getString('saved_password');
+      if (email != null && password != null) {
+        return {'email': email, 'password': password};
+      }
     }
     return null;
   }
@@ -46,21 +61,20 @@ class AuthController {
     }
 
     try {
-      final user = await _userController.getUserByEmailAndPassword(
-        email,
-        password,
-      );
+      final user = await _userController.getUserByEmailAndPassword(email, password);
 
       if (user != null) {
         if (rememberMe) {
           await _saveCredentials(email, password);
-          log('Credenciais salvas com sucesso.');
         } else {
-          await _clearCredentials();
-          log('Credenciais removidas (Lembrar-me desativado).');
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('saved_email');
+          await prefs.remove('saved_password');
+          await prefs.setBool('remember_me', false);
         }
 
-        log('Usuário logado com sucesso: ${user.email}');
+        await _setLoggedIn(true); 
+
         return {
           'success': true,
           'message': 'Login realizado com sucesso!',
@@ -113,17 +127,7 @@ class AuthController {
 
     try {
       final id = await _userController.insertUser(newUser);
-
       if (id > 0) {
-        final users = await _userController.getAllUsers();
-        log('--- USUÁRIOS NO DB APÓS CADASTRO (DEBUG) ---');
-        for (var user in users) {
-          log(
-            'ID: ${user.id}, Nome: ${user.name}, Email: ${user.email}, BT ID: ${user.bluetoothIdentifier}',
-          );
-        }
-        log('-------------------------------------------');
-
         return {'success': true, 'message': 'Usuário cadastrado com sucesso!'};
       } else {
         return {
