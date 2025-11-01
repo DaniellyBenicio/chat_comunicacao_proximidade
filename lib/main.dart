@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat_de_conversa/services/database_chat.dart';
@@ -9,6 +8,7 @@ import 'package:chat_de_conversa/views/login.dart';
 import 'package:chat_de_conversa/controllers/auth_controller.dart';
 import 'package:chat_de_conversa/components/nav_bar.dart';
 import 'package:chat_de_conversa/providers/theme_provider.dart';
+import 'package:chat_de_conversa/theme/app_theme.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -84,43 +84,6 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
     }
   }
 
-  // TEMAS
-  final ThemeData _lightTheme = ThemeData(
-    scaffoldBackgroundColor: const Color(0xFFF7F9FC),
-    primaryColor: const Color(0xFF004E89),
-    secondaryHeaderColor: const Color(0xFF000000),
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF004E89),
-      brightness: Brightness.light,
-    ),
-    textTheme: GoogleFonts.poppinsTextTheme(),
-    useMaterial3: true,
-    brightness: Brightness.light,
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
-      selectedItemColor: Color(0xFF004E89),
-      unselectedItemColor: Colors.grey,
-    ),
-  );
-
-  final ThemeData _darkTheme = ThemeData(
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    primaryColor: const Color(0xFF004E89),
-    secondaryHeaderColor: const Color(0xFFFFFFFF),
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF004E89),
-      brightness: Brightness.dark,
-    ),
-    textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Color(0xFF1E1E1E),
-      selectedItemColor: Color(0xFF004E89),
-      unselectedItemColor: Colors.grey,
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -133,8 +96,8 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'GeoTalk',
-            theme: _lightTheme,
-            darkTheme: _darkTheme,
+            theme: AppTheme.lightTheme,      
+            darkTheme: AppTheme.darkTheme,    
             themeMode: themeProvider.themeMode,
             home: _initialScreen,
           );
