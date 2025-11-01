@@ -33,7 +33,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _completeOnboardingAndNavigateToCadastro() async {
     final prefs = await SharedPreferences.getInstance();
-
     await prefs.setBool('onboarding_completed', true);
 
     Navigator.pushReplacement(
@@ -44,11 +43,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _nextPage() {
     final nextPage = _currentPage + 1;
-
     if (nextPage < onboardingData.length) {
-      setState(() {
-        _currentPage = nextPage;
-      });
       _controller.animateToPage(
         nextPage,
         duration: const Duration(milliseconds: 400),
@@ -78,12 +73,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Expanded(
                 child: PageView.builder(
                   controller: _controller,
-                  physics: const NeverScrollableScrollPhysics(),
+                  physics: const BouncingScrollPhysics(), 
                   itemCount: onboardingData.length,
-                  onPageChanged: (index) {
-                    setState(() {
-                      _currentPage = index;
-                    });
+                  onPageChanged: (index) async {
+                    setState(() => _currentPage = index);
+                    if (index == onboardingData.length - 1) {
+                      await Future.delayed(const Duration(milliseconds: 300));
+                    }
                   },
                   itemBuilder: (context, index) {
                     final item = onboardingData[index];
@@ -135,7 +131,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               const SizedBox(height: 40),
 
-              // Indicadores + botão de avanço
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
