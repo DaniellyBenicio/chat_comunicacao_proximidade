@@ -1,6 +1,7 @@
-import 'package:chat_de_conversa/styles/message_styles.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+
 
 class BluetoothOffView extends StatelessWidget {
   const BluetoothOffView({super.key});
@@ -247,19 +248,11 @@ class _DeviceTileState extends State<DeviceTile> {
   }
 
   void _talkFeature(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Conversar'),
-        content: const Text(
-          'Essa funcionalidade será implementada posteriormente.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            ChatScreen(deviceName: widget.result.device.name ?? "Desconhecido"),
       ),
     );
   }
@@ -470,4 +463,78 @@ class _SearchDevicesState extends State<SearchDevices> {
       ],
     );
   }
+}
+
+class ChatScreen extends StatefulWidget {
+  final String deviceName;
+
+  const ChatScreen({super.key, required this.deviceName});
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final List<String> messages = [];
+  final TextEditingController _controller = TextEditingController();
+
+  void _sendMessage() {
+    if (_controller.text.isNotEmpty) {
+      setState(() {
+        messages.add(_controller.text);
+        _controller.clear();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Chat com ${widget.deviceName}'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: messages.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(messages[index]),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      hintText: 'Digite uma mensagem...',
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _sendMessage,
+                ),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+// Dummy implementation of showCustomSnackBar to avoid errors
+void showCustomSnackBar(BuildContext context, String message, {bool isError = false}) {
+  final snackBar = SnackBar(
+    content: Text(message),
+    backgroundColor: isError ? Colors.red : Colors.green,
+  );
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
