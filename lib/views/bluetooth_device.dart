@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-
+import 'package:chat_de_conversa/views/ChatScreen.dart';
 
 class BluetoothOffView extends StatelessWidget {
   const BluetoothOffView({super.key});
@@ -464,7 +464,7 @@ class _SearchDevicesState extends State<SearchDevices> {
     );
   }
 }
-
+/*
 class ChatScreen extends StatefulWidget {
   final String deviceName;
 
@@ -528,7 +528,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-}
+}*/
 
 // Dummy implementation of showCustomSnackBar to avoid errors
 void showCustomSnackBar(BuildContext context, String message, {bool isError = false}) {
