@@ -237,14 +237,32 @@ class DeviceTile extends StatefulWidget {
 class _DeviceTileState extends State<DeviceTile> {
   bool _isConnected = false;
 
+  BluetoothConnection? connection; // <-- ESSENCIAL
+
   void _connectDevice(BuildContext context) async {
-    setState(() => _isConnected = true);
-    showCustomSnackBar(context, 'Conectado com sucesso!');
+    try {
+      connection = await BluetoothConnection.toAddress(
+        widget.result.device.address,
+      );
+
+      setState(() => _isConnected = true);
+
+      connection!.input!.listen((data) {
+        print("Recebido: ${String.fromCharCodes(data)}");
+      }).onDone(() {
+        setState(() => _isConnected = false);
+      });
+
+      showCustomSnackBar(context, 'Conectado com sucesso!');
+    } catch (e) {
+      showCustomSnackBar(context, 'Erro ao conectar: $e', isError: true);
+    }
   }
 
   void _disconnectDevice(BuildContext context) async {
+    await connection?.finish();
     setState(() => _isConnected = false);
-    showCustomSnackBar(context, 'Desconectado do dispositivo.');
+    showCustomSnackBar(context, 'Desconectado.');
   }
 
   void _talkFeature(BuildContext context) {
