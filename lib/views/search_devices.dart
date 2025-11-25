@@ -43,10 +43,21 @@ class SearchDevices extends StatelessWidget {
                   value: service.isAdvertising,
                   onChanged: (v) async {
                     if (v) {
-                      if (!await _requestPermissions(context)) return;
+                      final granted = await service.requestPermissions();
+                      if (!granted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Permissões necessárias! Ative todas."),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
                       await service.startAdvertising();
+                      await service.startDiscovery();
                     } else {
                       await service.stopAdvertising();
+                      await service.stopDiscovery();
                     }
                   },
                   activeColor: const Color(0xFF004E89),
@@ -68,7 +79,7 @@ class SearchDevices extends StatelessWidget {
                         Icon(Icons.wifi_find, size: 80, color: Colors.grey),
                         SizedBox(height: 16),
                         Text(
-                          'Nenhum dispositivo por perto...\nLigue o interruptor no outro celular',
+                          'Nenhum dispositivo por perto...',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 16, color: Colors.grey),
                         ),
@@ -90,7 +101,7 @@ class SearchDevices extends StatelessWidget {
                           color: conectado ? Colors.green : Colors.blue,
                           size: 40,
                         ),
-                        title: Text(info.endpointName),
+                        title: Text(service.getEndpointDisplayName(id)),
                         subtitle: Text(
                           conectado ? "Conectado" : "Conectando...",
                         ),
@@ -100,7 +111,7 @@ class SearchDevices extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => ChatScreen(
-                                      deviceName: info.endpointName,
+                                      deviceName: service.getEndpointDisplayName(id),
                                       endpointId: id,
                                     ),
                                   ),

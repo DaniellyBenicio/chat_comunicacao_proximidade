@@ -21,7 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
     {
       "image": "assets/images/image1.png",
-      "title": "Conexões\nInstantâneas?",
+      "title": "Conexões\nInstantâneas",
       "subtitle": "As melhores conversas\ncomeçam perto de você.",
     },
     {
