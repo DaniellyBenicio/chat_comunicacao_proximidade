@@ -4,28 +4,6 @@ import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NearbyService with ChangeNotifier {
-  String userDisplayName = "Usuário";
-  
-  void setUserName(String name) async {
-    final newName = name.trim().isEmpty ? "Usuário" : name;
-    if (userDisplayName == newName) return;
-
-    userDisplayName = newName;
-
-    if (_isAdvertising) {
-      await stopAdvertising();
-      if (_isDiscovering) await stopDiscovery();
-      await startAdvertising();
-      await startDiscovery();
-    }
-
-    for (final endpointId in Set.from(connectedEndpoints)) {
-      sendMessage(endpointId, "@@NAME@@:$userDisplayName");
-    }
-
-    notifyListeners();
-  }
-
   static final NearbyService _instance = NearbyService._internal();
   factory NearbyService() => _instance;
   NearbyService._internal();
@@ -33,19 +11,45 @@ class NearbyService with ChangeNotifier {
   static const String _serviceId = "com.geotalk.app";
   static const Strategy _strategy = Strategy.P2P_CLUSTER;
 
+  String userDisplayName = "Usuário";
+
+  void setUserName(String name) {
+    final newName = name.trim().isEmpty ? "Usuário" : name.trim();
+    if (userDisplayName == newName) return;
+
+    userDisplayName = newName;
+
+    for (final id in List.from(connectedEndpoints)) {
+      sendMessage(id, "@@NAME@@:$newName");
+    }
+
+    if (_isAdvertising) {
+      stopAdvertising().then(
+        (_) =>
+            Future.delayed(const Duration(milliseconds: 400), startAdvertising),
+      );
+    }
+
+    notifyListeners();
+  }
+
   bool _isAdvertising = false;
   bool _isDiscovering = false;
 
   final Map<String, ConnectionInfo> discoveredDevices = {};
   final Set<String> connectedEndpoints = {};
-  
   final Map<String, String> _endpointNames = {};
+  final Set<String> _pendingConnections = {};
 
   bool get isAdvertising => _isAdvertising;
   bool get isDiscovering => _isDiscovering;
 
   String getEndpointDisplayName(String endpointId) {
     return _endpointNames[endpointId] ?? "Conectando...";
+  }
+
+  bool isConnectionPending(String endpointId) {
+    return _pendingConnections.contains(endpointId);
   }
 
   Future<bool> requestPermissions() async {
@@ -74,6 +78,7 @@ class NearbyService with ChangeNotifier {
       await Nearby().startAdvertising(
         userDisplayName,
         _strategy,
+        serviceId: _serviceId,
         onConnectionInitiated: (id, info) => _onConnectionInitiated(id, info),
         onConnectionResult: (id, status) {
           if (status == Status.CONNECTED) {
@@ -82,10 +87,9 @@ class NearbyService with ChangeNotifier {
           }
         },
         onDisconnected: (id) => _cleanupEndpoint(id),
-        serviceId: _serviceId,
       );
       _isAdvertising = true;
-      print("[Nearby] Advertising como: $userDisplayName");
+      print("[Nearby] Anunciando como: $userDisplayName");
       notifyListeners();
     } catch (e) {
       print("[Nearby] Erro advertising: $e");
@@ -105,93 +109,104 @@ class NearbyService with ChangeNotifier {
       await Nearby().startDiscovery(
         userDisplayName,
         _strategy,
+        serviceId: _serviceId,
         onEndpointFound: (id, name, serviceId) async {
           if (id == null) return;
 
-          print("[Discovery] Encontrado endpoint: $id (nome temporário: $name)");
-
-          if (!_endpointNames.containsKey(id) || _endpointNames[id] == name) {
-            _endpointNames[id] = name;
+          if (!_endpointNames.containsKey(id)) {
+            _endpointNames[id] = "Dispositivo Desconhecido"; 
           }
 
           discoveredDevices[id] = ConnectionInfo(id, _endpointNames[id]!, true);
           notifyListeners();
-
-          if (!connectedEndpoints.contains(id)) {
-            await Nearby().requestConnection(
-              userDisplayName,
-              id,
-              onConnectionInitiated: (endpointId, info) => _onConnectionInitiated(endpointId, info),
-              onConnectionResult: (endpointId, status) {
-                if (status == Status.CONNECTED) {
-                  connectedEndpoints.add(endpointId);
-                  notifyListeners();
-                }
-              },
-              onDisconnected: (endpointId) {
-                if (endpointId != null) _cleanupEndpoint(endpointId);
-              },
-            );
-          }
         },
-        onEndpointLost: (id) {
-          if (id != null) _cleanupEndpoint(id);
-        },
-        serviceId: _serviceId,
+        onEndpointLost: (id) => _cleanupEndpoint(id),
       );
       _isDiscovering = true;
-      print("[Nearby] Discovery iniciado");
+      print("[Nearby] Buscando dispositivos...");
       notifyListeners();
     } catch (e) {
       print("[Nearby] Erro discovery: $e");
     }
   }
 
-  Future<void> stopDiscovery() async {
-    if (!_isDiscovering) return;
-    await Nearby().stopDiscovery();
-    _isDiscovering = false;
-    notifyListeners();
+  Future<void> _connectTo(String endpointId) async {
+    if (connectedEndpoints.contains(endpointId) ||
+        isConnectionPending(endpointId))
+      return;
+
+    try {
+      _pendingConnections.add(endpointId);
+      _endpointNames[endpointId] = "Aguardando conexão...";
+      notifyListeners();
+
+      await Nearby().requestConnection(
+        userDisplayName,
+        endpointId,
+        onConnectionInitiated: _onConnectionInitiated,
+        onConnectionResult: (id, status) {
+          _pendingConnections.remove(id);
+          if (status == Status.CONNECTED) {
+            connectedEndpoints.add(id);
+            sendMessage(id, "@@NAME@@:$userDisplayName");
+            notifyListeners();
+          } else {
+            _endpointNames[id] = "Dispositivo Desconhecido";
+            notifyListeners();
+          }
+        },
+        onDisconnected: _cleanupEndpoint,
+      );
+    } catch (e) {
+      print("[Nearby] Erro ao conectar: $e");
+      _pendingConnections.remove(endpointId);
+      _endpointNames[endpointId] = "Dispositivo Desconhecido";
+      notifyListeners();
+    }
   }
 
-  void _onConnectionInitiated(String id, ConnectionInfo info) async {
-    print("[Nearby] Conexão iniciada com $id");
+  Future<void> initiateConnection(String endpointId) async {
+    await _connectTo(endpointId);
+  }
+
+  void _onConnectionInitiated(String endpointId, ConnectionInfo info) {
+    print("[Nearby] Conexão aceita com $endpointId");
 
     Nearby().acceptConnection(
-      id,
-      onPayLoadRecieved: (endpointId, payload) {
-        if (payload.type == PayloadType.BYTES && payload.bytes != null) {
-          final message = String.fromCharCodes(payload.bytes!);
+      endpointId,
+      onPayLoadRecieved: (eid, payload) {
+        if (payload.type != PayloadType.BYTES || payload.bytes == null) return;
+        final msg = String.fromCharCodes(payload.bytes!);
 
-          if (message.startsWith("@@NAME@@:")) {
-            final realName = message.substring(9);
-            _endpointNames[endpointId] = realName;
-            print("[Nearby] Nome real recebido: $realName");
-            notifyListeners();
-            return;
+        if (msg.startsWith("@@NAME@@:")) {
+          final realName = msg.substring(9).trim();
+          if (_endpointNames[eid] != realName) {
+            _endpointNames[eid] = realName;
+            print("[Nearby] Nome recebido: $realName");
+            notifyListeners(); 
           }
+          return;
+        }
 
-          print("[Payload] Mensagem de $endpointId: $message");
-        }
-      },
-      onPayloadTransferUpdate: (endpointId, update) {
-        if (update.status == PayloadStatus.SUCCESS) {
-          print("[Payload] Transferência concluída: $endpointId");
-        }
+        print("[Chat] $eid: $msg");
       },
     );
 
-    await Future.delayed(const Duration(milliseconds: 600));
-    sendMessage(id, "@@NAME@@:$userDisplayName");
-
-    connectedEndpoints.add(id);
+    _pendingConnections.remove(endpointId);
+    connectedEndpoints.add(endpointId);
+    _endpointNames[endpointId] ??=
+        "Conectando..."; 
     notifyListeners();
+
+    sendMessage(endpointId, "@@NAME@@:$userDisplayName");
   }
 
-  void _cleanupEndpoint(String id) {
+  void _cleanupEndpoint(String? id) {
+    if (id == null) return;
     connectedEndpoints.remove(id);
     discoveredDevices.remove(id);
     _endpointNames.remove(id);
+    _pendingConnections.remove(id);
     notifyListeners();
   }
 
@@ -202,8 +217,15 @@ class NearbyService with ChangeNotifier {
         Uint8List.fromList(message.codeUnits),
       );
     } catch (e) {
-      print("[Payload] Erro ao enviar: $e");
+      print("[Nearby] Erro ao enviar: $e");
     }
+  }
+
+  Future<void> stopDiscovery() async {
+    if (!_isDiscovering) return;
+    await Nearby().stopDiscovery();
+    _isDiscovering = false;
+    notifyListeners();
   }
 
   void disposeService() {
@@ -213,5 +235,6 @@ class NearbyService with ChangeNotifier {
     discoveredDevices.clear();
     connectedEndpoints.clear();
     _endpointNames.clear();
+    _pendingConnections.clear();
   }
 }
