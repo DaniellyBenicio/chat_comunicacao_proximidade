@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import 'package:chat_de_conversa/services/nearby_service.dart';
+import 'package:provider/provider.dart';
 
 class Conversations extends StatefulWidget {
   final String userName;
-
   const Conversations({super.key, required this.userName});
 
   @override
@@ -11,32 +11,13 @@ class Conversations extends StatefulWidget {
 }
 
 class _ConversationsState extends State<Conversations> {
-  bool _bluetoothOn = false;
-
   final List<Map<String, String>> _conversations = [];
 
   @override
-  void initState() {
-    super.initState();
-    _checkBluetoothStatus();
-    FlutterBluetoothSerial.instance.onStateChanged().listen((
-      BluetoothState state,
-    ) {
-      setState(() {
-        _bluetoothOn = state == BluetoothState.STATE_ON;
-      });
-    });
-  }
-
-  Future<void> _checkBluetoothStatus() async {
-    bool isOn = await FlutterBluetoothSerial.instance.isEnabled ?? false;
-    setState(() {
-      _bluetoothOn = isOn;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final nearbyService = Provider.of<NearbyService>(context);
+    final isConnected = nearbyService.connectedEndpoints.isNotEmpty;
+
     return Column(
       children: [
         AppBar(
@@ -79,18 +60,12 @@ class _ConversationsState extends State<Conversations> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            BluetoothStatusIndicator(isOn: _bluetoothOn),
-                          ],
-                        ),
+                        NearbyStatusIndicator(isConnected: isConnected),
                       ],
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 30),
-
                 const TextField(
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.search),
@@ -100,9 +75,7 @@ class _ConversationsState extends State<Conversations> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
                 Expanded(
                   child: _conversations.isEmpty
                       ? Center(
@@ -125,7 +98,7 @@ class _ConversationsState extends State<Conversations> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Se conecte com alguém para iniciar.',
+                                'Conecte-se com alguém para começar.',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey,
@@ -178,10 +151,9 @@ class _ConversationsState extends State<Conversations> {
   }
 }
 
-class BluetoothStatusIndicator extends StatelessWidget {
-  final bool isOn;
-
-  const BluetoothStatusIndicator({super.key, required this.isOn});
+class NearbyStatusIndicator extends StatelessWidget {
+  final bool isConnected;
+  const NearbyStatusIndicator({super.key, required this.isConnected});
 
   @override
   Widget build(BuildContext context) {
@@ -191,13 +163,15 @@ class BluetoothStatusIndicator extends StatelessWidget {
           width: 10,
           height: 10,
           decoration: BoxDecoration(
-            color: isOn ? Colors.green : Colors.red,
+            color: isConnected ? Colors.green : Colors.red,
             shape: BoxShape.circle,
           ),
         ),
         const SizedBox(width: 6),
         Text(
-          isOn ? 'Disponível via Bluetooth' : 'Bluetooth desligado',
+          isConnected
+              ? 'Conectado por Wi-Fi Direct'
+              : 'Procurando dispositivos...',
           style: const TextStyle(fontSize: 14, color: Colors.grey),
         ),
       ],

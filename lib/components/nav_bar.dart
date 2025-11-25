@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chat_de_conversa/views/conversations.dart';
-import 'package:chat_de_conversa/views/bluetooth_device.dart';
+import 'package:chat_de_conversa/views/search_devices.dart';
 import 'package:chat_de_conversa/views/settings.dart';
 
 class BottomNavBar extends StatefulWidget {
