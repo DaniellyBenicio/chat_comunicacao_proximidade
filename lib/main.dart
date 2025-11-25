@@ -66,7 +66,7 @@ class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
             final userName = result['name'] ?? 'Usuário';
 
             final nearbyService = Provider.of<NearbyService>(context, listen: false);
-            nearbyService.setUserName(userName);
+            nearbyService.getDisplayName(userName);
 
             if (nearbyService.isAdvertising) {
               await nearbyService.stopAdvertising();

@@ -17,51 +17,86 @@ class SearchDevices extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
           ),
           centerTitle: true,
-          backgroundColor: const Color(0xFF004E89),
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
+
+        // ===== TORNA-ME VISÍVEL + NOME DO MEU DISPOSITIVO =====
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Tornar-me visível',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tornar-me visível',
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  // ← AQUI MOSTRA O NOME DO SEU CELULAR
+                  Text(
+                    'Meu nome:',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
               ),
-              Consumer<NearbyService>(
-                builder: (context, service, child) => Switch(
-                  value: service.isAdvertising,
-                  onChanged: (v) async {
-                    if (v) {
-                      if (!await service.requestPermissions()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Permissões necessárias!"),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                        return;
-                      }
-                      await service.startAdvertising();
-                      await service.startDiscovery();
-                    } else {
-                      await service.stopAdvertising();
-                      await service.stopDiscovery();
-                    }
-                  },
-                  activeColor: const Color(0xFF004E89),
-                ),
+              Column(
+                children: [
+                  Consumer<NearbyService>(
+                    builder: (context, service, _) => Switch(
+                      value: service.isAdvertising,
+                      onChanged: (v) async {
+                        if (v) {
+                          final granted = await service.requestPermissions();
+                          if (!granted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Permissões necessárias! Ative todas."),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                          await service.startAdvertising();
+                          await service.startDiscovery();
+                        } else {
+                          await service.stopAdvertising();
+                          await service.stopDiscovery();
+                        }
+                      },
+                      activeColor: const Color(0xFF004E89),
+                    ),
+                  ),
+                  // ← NOME DO SEU DISPOSITIVO AQUI
+                  Consumer<NearbyService>(
+                    builder: (context, service, _) => Text(
+                      service.userDisplayName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF004E89),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
+
+        const Divider(height: 30, thickness: 1),
+
+        // ===== LISTA DE DISPOSITIVOS PRÓXIMOS =====
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Consumer<NearbyService>(
-              builder: (context, service, child) {
-                if (service.discoveredDevices.isEmpty) {
+              builder: (context, service, _) {
+                final devices = service.discoveredDevices.values.toList();
+
+                if (devices.isEmpty) {
                   return const Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -69,8 +104,9 @@ class SearchDevices extends StatelessWidget {
                         Icon(Icons.wifi_find, size: 80, color: Colors.grey),
                         SizedBox(height: 16),
                         Text(
-                          "Nenhum dispositivo por perto...",
-                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                          'Nenhum dispositivo por perto...',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
                         ),
                       ],
                     ),
@@ -78,74 +114,58 @@ class SearchDevices extends StatelessWidget {
                 }
 
                 return ListView.builder(
-                  itemCount: service.discoveredDevices.length,
+                  itemCount: devices.length,
                   itemBuilder: (context, i) {
-                    final id = service.discoveredDevices.keys.elementAt(i);
-                    final name = service.getEndpointDisplayName(id);
-                    final isConnected = service.connectedEndpoints.contains(id);
-                    final isPending = service.isConnectionPending(id);
-
-                    String statusText;
-                    Widget? trailingWidget;
-                    Color iconColor;
-
-                    if (isConnected) {
-                      statusText = "Conectado";
-                      iconColor = Colors.green;
-                      trailingWidget = ElevatedButton.icon(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ChatScreen(deviceName: name, endpointId: id),
-                          ),
-                        ),
-                        icon: const Icon(Icons.chat, color: Colors.white),
-                        label: const Text("Chat"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    } else if (isPending) {
-                      statusText = "Aguardando conexão...";
-                      iconColor = Colors.orange;
-                      trailingWidget = const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 3),
-                      );
-                    } else {
-                      statusText = "Tocar para conectar";
-                      iconColor = Colors.blue;
-                      trailingWidget = ElevatedButton(
-                        onPressed: () => service.initiateConnection(id),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text("Conectar"),
-                      );
-                    }
+                    final device = devices[i];
+                    final id = device.endpointId;
+                    final conectado = service.connectedEndpoints.contains(id);
 
                     return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      elevation: 3,
                       child: ListTile(
-                        leading: Icon(
-                          isConnected ? Icons.wifi : Icons.wifi_find,
-                          color: iconColor,
-                          size: 40,
-                        ),
-                        title: Text(
-                          name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 17,
+                        leading: CircleAvatar(
+                          backgroundColor: conectado ? Colors.green : Colors.blue,
+                          child: Icon(
+                            conectado ? Icons.wifi : Icons.wifi_find,
+                            color: Colors.white,
                           ),
                         ),
-                        subtitle: Text(statusText),
-                        trailing: trailingWidget,
-                        onTap: isConnected || isPending
-                            ? null
-                            : () => service.initiateConnection(id),
+                        title: Text(
+                          service.getDisplayName(id),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          conectado ? "Conectado" : "Conectando...",
+                          style: TextStyle(
+                            color: conectado ? Colors.green : Colors.orange,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        trailing: conectado
+                            ? ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ChatScreen(
+                                        deviceName: service.getDisplayName(id),
+                                        endpointId: id,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(Icons.chat, color: Colors.white),
+                                label: const Text("Chat"),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                ),
+                              )
+                            : const SizedBox(
+                                width: 30,
+                                height: 30,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
                       ),
                     );
                   },
