@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
@@ -5,14 +6,14 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 /// ============================================
-/// MODEL PRÓPRIO - ESTILO USER (com toMap/fromMap/copyWith)
+/// MODEL DO DISPOSITIVO
 /// ============================================
 class NearbyDevice {
   final String endpointId;
-  final String endpointName;   // nome que chegou no discovery
-  final String displayName;    // nome real depois de receber @@NAME@@
-  final bool isAvailable;      // tá visível no momento
-  final bool isConnected;      // já está conectado
+  final String endpointName;
+  final String displayName;
+  final bool isAvailable;
+  final bool isConnected;
 
   NearbyDevice({
     required this.endpointId,
@@ -36,33 +37,10 @@ class NearbyDevice {
       isConnected: isConnected ?? this.isConnected,
     );
   }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'endpointId': endpointId,
-      'endpointName': endpointName,
-      'displayName': displayName,
-      'isAvailable': isAvailable,
-      'isConnected': isConnected,
-    };
-  }
-
-  factory NearbyDevice.fromMap(Map<String, dynamic> map) {
-    return NearbyDevice(
-      endpointId: map['endpointId'] as String,
-      endpointName: map['endpointName'] as String,
-      displayName: map['displayName'] as String? ?? "",
-      isAvailable: map['isAvailable'] as bool? ?? true,
-      isConnected: map['isConnected'] as bool? ?? false,
-    );
-  }
-
-  @override
-  String toString() => 'NearbyDevice($endpointId, $displayName, connected: $isConnected)';
 }
 
 /// ============================================
-/// SERVIÇO NEARBY - VERSÃO FINAL E CORRIGIDA
+/// SERVIÇO NEARBY - VERSÃO FINAL COM STREAM DE MENSAGENS
 /// ============================================
 class NearbyService with ChangeNotifier {
   static final NearbyService _instance = NearbyService._internal();
@@ -76,11 +54,15 @@ class NearbyService with ChangeNotifier {
   bool _isAdvertising = false;
   bool _isDiscovering = false;
 
-  // ← Agora usa nosso model próprio
   final Map<String, NearbyDevice> discoveredDevices = {};
   final Set<String> connectedEndpoints = {};
-  final Map<String, String> _realNames = {};        // guarda @@NAME@@ recebido
-  final Set<String> _connectionRequested = {};      // evita erro 8003
+  final Map<String, String> _realNames = {};
+  final Set<String> _connectionRequested = {};
+
+  // STREAM PARA AS MENSAGENS RECEBIDAS (ESSA É A MÁGICA!)
+  final StreamController<Map<String, dynamic>> _messageController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
 
   bool get isAdvertising => _isAdvertising;
   bool get isDiscovering => _isDiscovering;
@@ -98,7 +80,7 @@ class NearbyService with ChangeNotifier {
   }
 
   // ============================================================
-  // PERMISSÕES
+  // PERMISSÕES + INICIALIZAÇÃO
   // ============================================================
   Future<bool> requestPermissions() async {
     final statuses = await [
@@ -112,9 +94,6 @@ class NearbyService with ChangeNotifier {
     return statuses.values.every((s) => s.isGranted || s.isLimited);
   }
 
-  // ============================================================
-  // INICIALIZAÇÃO
-  // ============================================================
   Future<void> initialize() async {
     if (!await requestPermissions()) {
       print("[Nearby] Permissões negadas!");
@@ -129,11 +108,10 @@ class NearbyService with ChangeNotifier {
   }
 
   // ============================================================
-  // ADVERTISING
+  // ADVERTISING + DISCOVERY
   // ============================================================
   Future<void> startAdvertising() async {
     if (_isAdvertising) return;
-
     try {
       await Nearby().startAdvertising(
         userDisplayName,
@@ -156,19 +134,8 @@ class NearbyService with ChangeNotifier {
     }
   }
 
-  Future<void> stopAdvertising() async {
-    if (!_isAdvertising) return;
-    await Nearby().stopAdvertising();
-    _isAdvertising = false;
-    notifyListeners();
-  }
-
-  // ============================================================
-  // DISCOVERY (100% estável)
-  // ============================================================
   Future<void> startDiscovery() async {
     if (_isDiscovering) return;
-
     try {
       await Nearby().startDiscovery(
         userDisplayName,
@@ -176,9 +143,7 @@ class NearbyService with ChangeNotifier {
         serviceId: _serviceId,
         onEndpointFound: (id, name, serviceId) {
           if (id == null) return;
-
           print("[Discovery] Encontrado: $id → $name");
-
           _realNames[id] = name;
 
           discoveredDevices[id] = NearbyDevice(
@@ -188,35 +153,27 @@ class NearbyService with ChangeNotifier {
             isAvailable: true,
             isConnected: connectedEndpoints.contains(id),
           );
-
           notifyListeners();
 
-          // Só tenta conectar uma vez
           if (!connectedEndpoints.contains(id) && !_connectionRequested.contains(id)) {
             _requestConnectionOnce(id);
           }
         },
-       onEndpointLost: (id) {
-  if (id == null) return;
-
-  print("[Discovery] Endpoint perdido temporariamente: $id");
-
-  // Se NÃO estiver conectado → remove da lista
-  if (!connectedEndpoints.contains(id)) {
-    discoveredDevices.remove(id);
-    _realNames.remove(id);
-    notifyListeners();
-  } else {
-    // Se estiver conectado → só marca como "offline" na UI (opcional, mas fica bonito)
-    final device = discoveredDevices[id];
-    if (device != null) {
-      discoveredDevices[id] = device.copyWith(isAvailable: false);
-      notifyListeners();
-    }
-  }
-},
+        onEndpointLost: (id) {
+          if (id == null) return;
+          if (!connectedEndpoints.contains(id)) {
+            discoveredDevices.remove(id);
+            _realNames.remove(id);
+            notifyListeners();
+          } else {
+            final dev = discoveredDevices[id];
+            if (dev != null) {
+              discoveredDevices[id] = dev.copyWith(isAvailable: false);
+              notifyListeners();
+            }
+          }
+        },
       );
-
       _isDiscovering = true;
       print("[Nearby] Discovery iniciado");
       notifyListeners();
@@ -225,21 +182,9 @@ class NearbyService with ChangeNotifier {
     }
   }
 
-  Future<void> stopDiscovery() async {
-    if (!_isDiscovering) return;
-    await Nearby().stopDiscovery();
-    _isDiscovering = false;
-    notifyListeners();
-  }
-
-  // ============================================================
-  // CONEXÃO ÚNICA (nunca mais erro 8003)
-  // ============================================================
   void _requestConnectionOnce(String endpointId) async {
     if (_connectionRequested.contains(endpointId)) return;
-
     _connectionRequested.add(endpointId);
-    print("[Nearby] Solicitando conexão → $endpointId");
 
     try {
       await Nearby().requestConnection(
@@ -257,12 +202,11 @@ class NearbyService with ChangeNotifier {
       );
     } catch (e) {
       _connectionRequested.remove(endpointId);
-      print("[Nearby] Erro requestConnection: $e");
     }
   }
 
   // ============================================================
-  // ACEITA CONEXÃO + ENVIA NOME
+  // ACEITA CONEXÃO + ENVIA NOME + RECEBE MENSAGENS
   // ============================================================
   void _onConnectionInitiated(String id, ConnectionInfo info) async {
     print("[Nearby] Conexão aceita: $id");
@@ -274,10 +218,10 @@ class NearbyService with ChangeNotifier {
 
         final message = String.fromCharCodes(payload.bytes!);
 
+        // 1. Trata o nome real enviado pelo outro dispositivo
         if (message.startsWith("@@NAME@@:")) {
           final realName = message.substring(9);
           _realNames[endpointId] = realName;
-
           final dev = discoveredDevices[endpointId];
           if (dev != null) {
             discoveredDevices[endpointId] = dev.copyWith(displayName: realName);
@@ -286,8 +230,14 @@ class NearbyService with ChangeNotifier {
           return;
         }
 
-        print("[Mensagem] $endpointId: $message");
-        // aqui você pode disparar um callback se quiser
+        // 2. Mensagem normal → DISPARA PARA A TELA DO CHAT!
+        print("[Mensagem recebida] $endpointId: $message");
+
+        _messageController.add({
+          'endpointId': endpointId,
+          'message': message,
+          'time': DateTime.now(),
+        });
       },
       onPayloadTransferUpdate: (endpointId, update) {
         if (update.status == PayloadStatus.SUCCESS) {
@@ -335,17 +285,7 @@ class NearbyService with ChangeNotifier {
   }
 
   // ============================================================
-  // NOME BONITO NA UI
-  // ============================================================
-  String getDisplayName(String endpointId) {
-    return _realNames[endpointId] ??
-        discoveredDevices[endpointId]?.displayName ??
-        discoveredDevices[endpointId]?.endpointName ??
-        "Dispositivo";
-  }
-
-  // ============================================================
-  // LIMPEZA TOTAL
+  // LIMPEZA
   // ============================================================
   void disposeService() {
     Nearby().stopAllEndpoints();
@@ -355,11 +295,33 @@ class NearbyService with ChangeNotifier {
     connectedEndpoints.clear();
     _realNames.clear();
     _connectionRequested.clear();
+    _messageController.close();
   }
 
   @override
   void dispose() {
     disposeService();
     super.dispose();
+  }
+
+  Future<void> stopAdvertising() async {
+    if (!_isAdvertising) return;
+    await Nearby().stopAdvertising();
+    _isAdvertising = false;
+    notifyListeners();
+  }
+
+  Future<void> stopDiscovery() async {
+    if (!_isDiscovering) return;
+    await Nearby().stopDiscovery();
+    _isDiscovering = false;
+    notifyListeners();
+  }
+
+  String getDisplayName(String endpointId) {
+    return _realNames[endpointId] ??
+        discoveredDevices[endpointId]?.displayName ??
+        discoveredDevices[endpointId]?.endpointName ??
+        "Dispositivo";
   }
 }

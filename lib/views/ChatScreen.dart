@@ -24,6 +24,21 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+
+    // ESCUTA MENSAGENS RECEBIDAS DO DISPOSITIVO ATUAL
+    final nearbyService = Provider.of<NearbyService>(context, listen: false);
+    nearbyService.messageStream.listen((data) {
+      if (data['endpointId'] == widget.endpointId) {
+        setState(() {
+          _messages.insert(0, {
+            'text': data['message'] as String,
+            'isMe': false,
+            'time': data['time'] as DateTime,
+          });
+        });
+        _scrollToBottom();
+      }
+    });
   }
 
   void _sendMessage() {
@@ -49,13 +64,17 @@ class _ChatScreenState extends State<ChatScreen> {
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          0.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        _scrollController.animateTo(0.0,
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -69,9 +88,8 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Row(
           children: [
             const CircleAvatar(
-              backgroundColor: Colors.grey,
-              child: Icon(Icons.person, color: Colors.white),
-            ),
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.person, color: Colors.white)),
             const SizedBox(width: 10),
             Text(widget.deviceName, style: const TextStyle(fontSize: 18)),
           ],
@@ -105,9 +123,9 @@ class _ChatScreenState extends State<ChatScreen> {
               itemBuilder: (context, index) {
                 final msg = _messages[index];
                 return MessageBubble(
-                  message: msg['text'],
-                  isMe: msg['isMe'],
-                  time: msg['time'],
+                  message: msg['text'] as String,
+                  isMe: msg['isMe'] as bool,
+                  time: msg['time'] as DateTime,
                 );
               },
             ),
@@ -118,10 +136,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: SafeArea(
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.attach_file),
-                    onPressed: () {},
-                  ),
+                  IconButton(icon: const Icon(Icons.attach_file), onPressed: () {}),
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -131,6 +146,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       child: TextField(
                         controller: _controller,
+                        textInputAction: TextInputAction.send,
                         decoration: const InputDecoration(
                           hintText: "Digite uma mensagem...",
                           border: InputBorder.none,
@@ -159,20 +175,19 @@ class _ChatScreenState extends State<ChatScreen> {
 class MessageBubble extends StatelessWidget {
   final String message;
   final bool isMe;
-  final DateTime? time;
+  final DateTime time;
 
   const MessageBubble({
     super.key,
     required this.message,
     required this.isMe,
-    this.time,
+    required this.time,
   });
 
   @override
   Widget build(BuildContext context) {
-    final hora = time ?? DateTime.now();
     final horaFormatada =
-        "${hora.hour.toString().padLeft(2, '0')}:${hora.minute.toString().padLeft(2, '0')}";
+        "${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}";
 
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
@@ -184,12 +199,8 @@ class MessageBubble extends StatelessWidget {
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(15),
             topRight: const Radius.circular(15),
-            bottomLeft: isMe
-                ? const Radius.circular(15)
-                : const Radius.circular(3),
-            bottomRight: isMe
-                ? const Radius.circular(3)
-                : const Radius.circular(15),
+            bottomLeft: isMe ? const Radius.circular(15) : const Radius.circular(3),
+            bottomRight: isMe ? const Radius.circular(3) : const Radius.circular(15),
           ),
         ),
         child: Column(
