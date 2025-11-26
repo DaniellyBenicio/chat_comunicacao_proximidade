@@ -1,12 +1,13 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+
 import '../models/message.dart';
 import '../models/user.dart';
 
 class DatabaseChat {
   static const String _dbName = 'chat_proximidade.db';
-  static const int _dbVersion = 3;
+  static const int _dbVersion = 4;
 
   static Database? _database;
   static final DatabaseChat _instance = DatabaseChat._internal();
@@ -37,7 +38,7 @@ class DatabaseChat {
         endpointId TEXT NOT NULL,
         sender TEXT NOT NULL,
         content TEXT NOT NULL,
-        timestamp TEXT NOT NULL
+        timestamp INTEGER NOT NULL
       )
     ''');
 
@@ -56,25 +57,27 @@ class DatabaseChat {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 3) {
-      await db.execute('DROP TABLE IF EXISTS users');
+    if (oldVersion < 4) {
       await db.execute('DROP TABLE IF EXISTS messages');
+      await db.execute('DROP TABLE IF EXISTS users');
       await _onCreate(db, newVersion);
     }
   }
 
   Future<void> insertMessage(Message message, String endpointId) async {
     final db = await database;
+
     await db.insert('messages', {
       'endpointId': endpointId,
       'sender': message.sender,
       'content': message.content,
-      'timestamp': message.timestamp.toIso8601String(),
+      'timestamp': message.timestamp.millisecondsSinceEpoch,
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Message>> getMessagesByEndpoint(String endpointId) async {
     final db = await database;
+
     final maps = await db.query(
       'messages',
       where: 'endpointId = ?',
@@ -87,6 +90,7 @@ class DatabaseChat {
 
   Future<int> insertUser(User user) async {
     final db = await database;
+
     return await db.insert(
       'users',
       user.toMap(),
@@ -98,9 +102,7 @@ class DatabaseChat {
     final db = await database;
     final res = await db.query('users', where: 'email = ?', whereArgs: [email]);
 
-    if (res.isNotEmpty) {
-      return User.fromMap(res.first);
-    }
+    if (res.isNotEmpty) return User.fromMap(res.first);
     return null;
   }
 
