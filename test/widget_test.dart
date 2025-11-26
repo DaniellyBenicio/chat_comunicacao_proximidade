@@ -13,7 +13,7 @@ import 'package:chat_de_conversa/main.dart';
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const ChatProximidadeApp());
+    await tester.pumpWidget(const GeoTalkApp());
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

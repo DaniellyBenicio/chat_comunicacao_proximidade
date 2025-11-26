@@ -1,115 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:chat_de_conversa/services/database_chat.dart';
-import 'package:chat_de_conversa/services/nearby_service.dart';     
-import 'package:chat_de_conversa/views/home_screen.dart';
-import 'package:chat_de_conversa/views/login.dart';
-import 'package:chat_de_conversa/controllers/auth_controller.dart';
-import 'package:chat_de_conversa/components/nav_bar.dart';
-import 'package:chat_de_conversa/providers/theme_provider.dart';
-import 'package:chat_de_conversa/theme/app_theme.dart';
+
+import 'services/nearby_service.dart';
+import 'providers/theme_provider.dart';   
+import 'views/login.dart';
+import 'components/nav_bar.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await DatabaseChat().database;
-
-  runApp(const ChatProximidadeApp());
+  await SharedPreferences.getInstance();
+  runApp(const GeoTalkApp());
 }
 
-class ChatProximidadeApp extends StatefulWidget {
-  const ChatProximidadeApp({super.key});
+class GeoTalkApp extends StatelessWidget {
+  const GeoTalkApp({super.key});
 
-  @override
-  State<ChatProximidadeApp> createState() => _ChatProximidadeAppState();
-}
+  Future<Widget> _determineInitialScreen() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasCredentials = prefs.containsKey('user_credentials');
+    final savedName = prefs.getString('userDisplayName') ?? 'Usuário';
 
-class _ChatProximidadeAppState extends State<ChatProximidadeApp> {
-  Widget _initialScreen = const Scaffold(
-    body: Center(
-      child: CircularProgressIndicator(color: Color(0xFF004E89)),
-    ),
-  );
 
-  @override
-  void initState() {
-    super.initState();
-    _checkInitialFlow();
-  }
+    final nearbyService = NearbyService();
+    nearbyService.userDisplayName = savedName;
 
-  Future<void> _checkInitialFlow() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final bool hasCompletedOnboarding = prefs.getBool('onboarding_completed') ?? false;
-
-      if (!hasCompletedOnboarding) {
-        setState(() {
-          _initialScreen = const HomeScreen();
-        });
-        return;
-      }
-
-      final authController = AuthController();
-      final bool isLoggedIn = await authController.isLoggedIn();
-
-      if (isLoggedIn) {
-        final savedCredentials = await authController.getSavedCredentials();
-        if (savedCredentials != null) {
-          final result = await authController.loginUser(
-            email: savedCredentials['email']!,
-            password: savedCredentials['password']!,
-            rememberMe: true,
-          );
-
-          if (result['success']) {
-            final userName = result['name'] ?? 'Usuário';
-
-            final nearbyService = Provider.of<NearbyService>(context, listen: false);
-            nearbyService.getDisplayName(userName);
-
-            if (nearbyService.isAdvertising) {
-              await nearbyService.stopAdvertising();
-              await nearbyService.stopDiscovery();
-            }
-            await nearbyService.startAdvertising();
-            await nearbyService.startDiscovery();
-
-            setState(() {
-              _initialScreen = BottomNavBar(userName: userName);
-            });
-            return;
-          }
-        }
-      }
-
-      setState(() {
-        _initialScreen = const Login();
-      });
-    } catch (e) {
-      print('Erro ao verificar fluxo inicial: $e');
-      setState(() {
-        _initialScreen = const Login();
-      });
-    }
+    return hasCredentials ? const BottomNavBar() : const Login();
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => NearbyService()),  
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => NearbyService()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()), 
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp(
-            debugShowCheckedModeBanner: false,
             title: 'GeoTalk',
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeProvider.themeMode,
-            home: _initialScreen,
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF004E89),
+                brightness: Brightness.light,
+              ),
+              useMaterial3: true,
+            ),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF004E89),
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+            ),
+            themeMode: themeProvider.themeMode, 
+            home: FutureBuilder<Widget>(
+              future: _determineInitialScreen(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return snapshot.data!;
+                }
+
+                return Scaffold(
+                  backgroundColor: const Color(0xFF004E89),
+                  body: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.wifi_tethering, size: 80, color: Colors.white),
+                        const SizedBox(height: 32),
+                        const Text(
+                          'GeoTalk',
+                          style: TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        CircularProgressIndicator(
+                          color: Colors.white,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),

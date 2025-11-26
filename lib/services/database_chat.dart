@@ -1,76 +1,85 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:logger/logger.dart';
-
-final logger = Logger();
+import '../models/message.dart';
 
 class DatabaseChat {
-  static const String _databaseName = 'chat_proximidade.db';
-  static const int _databaseVersion = 1;
+  static const String _dbName = 'chat_proximidade.db';
+  static const int _dbVersion = 2; 
 
-  static Database? _db;
-
+  static Database? _database;
   static final DatabaseChat _instance = DatabaseChat._internal();
   factory DatabaseChat() => _instance;
   DatabaseChat._internal();
 
   Future<Database> get database async {
-    if (_db != null) {
-      return _db!;
-    }
-    _db = await _initDb();
-    return _db!;
+    _database ??= await _initDatabase();
+    return _database!;
   }
 
-  Future<Database> _initDb() async {
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final path = join(directory.path, _databaseName);
-      logger.i('Inicializando banco de dados em: $path');
+  Future<Database> _initDatabase() async {
+    final documentsDirectory = await getApplicationDocumentsDirectory();
+    final path = join(documentsDirectory.path, _dbName);
 
-      final db = await openDatabase(
-        path,
-        version: _databaseVersion,
-        onCreate: (db, version) async {
-          logger.i('Criando tabelas...');
-          await db.execute('''
-            CREATE TABLE messages (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              sender TEXT NOT NULL,
-              content TEXT NOT NULL,
-              timestamp TEXT DEFAULT (datetime('now'))
-            )
-          ''');
+    return await openDatabase(
+      path,
+      version: _dbVersion,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+  }
 
-          await db.execute('''
-            CREATE TABLE users (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              email TEXT NOT NULL UNIQUE,
-              password TEXT NOT NULL,
-              name TEXT NOT NULL,
-              bluetoothName TEXT,
-              bluetoothIdentifier TEXT NOT NULL UNIQUE
-            )
-          ''');
-          logger.i('Tabelas criadas com sucesso!');
-        },
-        onOpen: (db) {
-          logger.i('Banco de dados aberto com sucesso.');
-        },
-      );
-      return db;
-    } catch (e) {
-      logger.e('Erro ao inicializar o banco de dados: $e');
-      rethrow;
+  Future<void> _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        endpointId TEXT NOT NULL,
+        sender TEXT NOT NULL,
+        content TEXT NOT NULL,
+        timestamp TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_endpoint ON messages(endpointId)
+    ''');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('DROP TABLE IF EXISTS messages');
+      await _onCreate(db, newVersion);
     }
+  }
+
+  Future<void> insertMessage(Message message, String endpointId) async {
+    final db = await database;
+    await db.insert(
+      'messages',
+      {
+        'endpointId': endpointId,
+        'sender': message.sender,
+        'content': message.content,
+        'timestamp': message.timestamp.toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Message>> getMessagesByEndpoint(String endpointId) async {
+    final db = await database;
+    final maps = await db.query(
+      'messages',
+      where: 'endpointId = ?',
+      whereArgs: [endpointId],
+      orderBy: 'timestamp ASC',
+    );
+
+    return maps.map((m) => Message.fromMap(m)).toList();
   }
 
   Future<void> close() async {
-    if (_db != null) {
-      await _db!.close();
-      _db = null;
-      logger.i('Banco de dados fechado.');
-    }
+    final db = await database;
+    await db.close();
   }
 }

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:chat_de_conversa/views/conversations.dart';
-import 'package:chat_de_conversa/views/search_devices.dart';
-import 'package:chat_de_conversa/views/settings.dart';
+import '../views/conversations.dart';
+import '../views/search_devices.dart';
+import '../views/settings.dart';
 
 class BottomNavBar extends StatefulWidget {
-  final String userName;
-  const BottomNavBar({super.key, required this.userName});
+  const BottomNavBar({super.key});
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
@@ -13,21 +12,11 @@ class BottomNavBar extends StatefulWidget {
 
 class _BottomNavBarState extends State<BottomNavBar> {
   int _indiceAtual = 0;
-
-  late final List<Widget> _telas;
-
-  @override
-  void initState() {
-    super.initState();
-    _telas = [
-      // ABA 0: Tela de Conversas
-      Conversations(userName: widget.userName),
-      // ABA 1: Tela de Bluetooth (Procurar)
-      const SearchDevices(), 
-      // ABA 2: Configurações
-      const SettingsScreen(), 
-    ];
-  }
+  final List<Widget> _telas = const [
+    Conversations(),
+    SearchDevices(),
+    SettingsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -35,18 +24,17 @@ class _BottomNavBarState extends State<BottomNavBar> {
       body: IndexedStack(index: _indiceAtual, children: _telas),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _indiceAtual,
-        onTap: (indice) {
-          setState(() {
-            _indiceAtual = indice;
-          });
-        },
+        onTap: (i) => setState(() => _indiceAtual = i),
         selectedItemColor: const Color(0xFF004E89),
         unselectedItemColor: Colors.grey,
-        elevation: 10,
+        type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_outline), label: 'Conversas'),
           BottomNavigationBarItem(
-            icon: Icon(Icons.bluetooth_searching),
+            icon: Icon(Icons.chat_bubble_outline),
+            label: 'Conversas',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.wifi_find),
             label: 'Procurar',
           ),
           BottomNavigationBarItem(
