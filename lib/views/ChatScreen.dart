@@ -24,7 +24,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   List<Message> _messages = [];
   late final DatabaseChat _db;
-
   Color chatBackground = Colors.white;
 
   @override
@@ -34,15 +33,24 @@ class _ChatScreenState extends State<ChatScreen> {
     _loadMessages();
 
     final service = Provider.of<NearbyService>(context, listen: false);
-
     service.messageStream.listen((data) {
-      if (data['endpointId'] == widget.endpointId) {
-        final msg = Message(
+      if (data['endpointId'] != widget.endpointId) return;
+
+      final text = data['message'] as String;
+
+      final jaExiste = _messages.any((m) =>
+          m.content == text &&
+          m.sender == 'them' &&
+          DateTime.now().difference(m.timestamp).inSeconds.abs() < 5);
+
+      if (!jaExiste && mounted) {
+        final novaMsg = Message(
           sender: 'them',
-          content: data['message'] as String,
-          timestamp: data['time'] as DateTime? ?? DateTime.now(),
+          content: text,
+          timestamp: DateTime.now(),
         );
-        _addMessage(msg);
+        setState(() => _messages.add(novaMsg));
+        _scrollToBottom();
       }
     });
   }
@@ -51,17 +59,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final loaded = await _db.getMessagesByEndpoint(widget.endpointId);
     if (mounted) {
       setState(() => _messages = loaded);
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+      _scrollToBottom();
     }
-  }
-
-  void _addMessage(Message message) async {
-    if (!mounted) return;
-
-    setState(() => _messages.add(message));
-    await _db.insertMessage(message, widget.endpointId);
-
-    _scrollToBottom();
   }
 
   void _sendMessage() {
@@ -70,89 +69,79 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _controller.text.trim();
     final service = Provider.of<NearbyService>(context, listen: false);
 
-    final message = Message(
+    final minhaMensagem = Message(
       sender: 'me',
       content: text,
       timestamp: DateTime.now(),
     );
 
     service.sendMessage(widget.endpointId, text);
-    _addMessage(message);
+
+    setState(() {
+      _messages.add(minhaMensagem);
+    });
+
     _controller.clear();
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      });
-    }
+    if (!_scrollController.hasClients) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   String _formatDayHeader(DateTime date) {
     final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
-    final msgDate = DateTime(date.year, date.month, date.day);
-
-    if (msgDate == today) return "Hoje";
-    if (msgDate == yesterday) return "Ontem";
-
+    final hoje = DateTime(now.year, now.month, now.day);
+    final ontem = hoje.subtract(const Duration(days: 1));
+    final d = DateTime(date.year, date.month, date.day);
+    if (d == hoje) return "Hoje";
+    if (d == ontem) return "Ontem";
     return DateFormat('dd/MM/yyyy').format(date);
-  }
-
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   void _openMenu() {
     showModalBottomSheet(
       context: context,
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.image),
-                title: const Text("Mudar fundo do chat"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _selectBackgroundColor();
-                },
-              ),
-            ],
+      builder: (_) => Wrap(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.palette_outlined),
+            title: const Text("Mudar fundo do chat"),
+            onTap: () {
+              Navigator.pop(context);
+              _chooseBackground();
+            },
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
-  void _selectBackgroundColor() {
+  void _chooseBackground() {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Escolha o fundo"),
-          content: SizedBox(
-            height: 120,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _colorOption(Colors.white),
-                _colorOption(const Color(0xFFE8F0FE)),
-                _colorOption(const Color(0xFFFFF8E1)),
-                _colorOption(const Color(0xFFE0F7FA)),
-              ],
-            ),
+      builder: (_) => AlertDialog(
+        title: const Text("Fundo do chat"),
+        content: SizedBox(
+          height: 100,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _colorOption(Colors.white),
+              _colorOption(const Color(0xFFE8F0FE)),
+              _colorOption(const Color(0xFFFFF3E0)),
+              _colorOption(const Color(0xFFE8F5E8)),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -162,130 +151,86 @@ class _ChatScreenState extends State<ChatScreen> {
         setState(() => chatBackground = color);
         Navigator.pop(context);
       },
-      child: CircleAvatar(radius: 24, backgroundColor: color),
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.grey.shade400, width: 2),
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final String initial = widget.deviceName.isNotEmpty
-        ? widget.deviceName[0].toUpperCase()
-        : "?";
+    final inicial = widget.deviceName.isNotEmpty ? widget.deviceName[0].toUpperCase() : "?";
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: const Color(0xFF004E89),
         foregroundColor: Colors.white,
-
         title: Row(
           children: [
             CircleAvatar(
               backgroundColor: Colors.white,
-              child: Text(
-                initial,
-                style: const TextStyle(
-                  color: Color(0xFF004E89),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: Text(inicial, style: const TextStyle(color: Color(0xFF004E89), fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Text(widget.deviceName),
           ],
         ),
-
-        actions: [
-          IconButton(icon: const Icon(Icons.more_vert), onPressed: _openMenu),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.more_vert), onPressed: _openMenu)],
       ),
-
-      body: Column(
-        children: [
-          Expanded(
-            child: Container(
-              color: chatBackground,
+      body: Container(
+        color: chatBackground,
+        child: Column(
+          children: [
+            Expanded(
               child: _messages.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Nenhuma mensagem ainda.\nComece o papo!',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                    )
+                  ? const Center(child: Text("Nenhuma mensagem ainda.\nComece o papo!", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)))
                   : ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(12),
                       itemCount: _messages.length,
-                      itemBuilder: (context, index) {
-                        final current = _messages[index];
-                        final isMe = current.sender == 'me';
-
-                        Message? previous;
-                        if (index > 0) previous = _messages[index - 1];
-
-                        final showHeader =
-                            previous == null ||
-                            !_isSameDay(current.timestamp, previous.timestamp);
+                      itemBuilder: (context, i) {
+                        final msg = _messages[i];
+                        final souEu = msg.sender == 'me';
+                        final mostrarData = i == 0 || !_isSameDay(msg.timestamp, _messages[i - 1].timestamp);
 
                         return Column(
                           children: [
-                            if (showHeader)
+                            if (mostrarData)
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    _formatDayHeader(current.timestamp),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.grey,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                  decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(20)),
+                                  child: Text(_formatDayHeader(msg.timestamp), style: const TextStyle(fontSize: 12)),
                                 ),
                               ),
-
                             Align(
-                              alignment: isMe
-                                  ? Alignment.centerRight
-                                  : Alignment.centerLeft,
+                              alignment: souEu ? Alignment.centerRight : Alignment.centerLeft,
                               child: Container(
-                                padding: const EdgeInsets.all(12),
-                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                margin: const EdgeInsets.symmetric(vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: isMe
-                                      ? const Color(0xFF004E89)
-                                      : Colors.grey[200],
-                                  borderRadius: BorderRadius.circular(18),
+                                  color: souEu ? const Color(0xFF004E89) : Colors.grey[200],
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: const Radius.circular(18),
+                                    topRight: const Radius.circular(18),
+                                    bottomLeft: souEu ? const Radius.circular(18) : const Radius.circular(4),
+                                    bottomRight: souEu ? const Radius.circular(4) : const Radius.circular(18),
+                                  ),
                                 ),
                                 child: Column(
-                                  crossAxisAlignment: isMe
-                                      ? CrossAxisAlignment.end
-                                      : CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      current.content,
-                                      style: TextStyle(
-                                        color: isMe
-                                            ? Colors.white
-                                            : Colors.black,
-                                        fontSize: 15,
-                                      ),
-                                    ),
+                                    Text(msg.content, style: TextStyle(color: souEu ? Colors.white : Colors.black87)),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      DateFormat(
-                                        'HH:mm',
-                                      ).format(current.timestamp),
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: isMe
-                                            ? Colors.white70
-                                            : Colors.black54,
-                                      ),
-                                    ),
+                                    Text(DateFormat('HH:mm').format(msg.timestamp), style: TextStyle(fontSize: 11, color: souEu ? Colors.white70 : Colors.black54)),
                                   ],
                                 ),
                               ),
@@ -295,46 +240,43 @@ class _ChatScreenState extends State<ChatScreen> {
                       },
                     ),
             ),
-          ),
-
-          SafeArea(
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: "Digite uma mensagem...",
-                        filled: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _sendMessage(),
+                        decoration: InputDecoration(
+                          hintText: "Digite uma mensagem...",
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                         ),
                       ),
-                      onSubmitted: (_) => _sendMessage(),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  FloatingActionButton(
-                    onPressed: _sendMessage,
-                    mini: true,
-                    backgroundColor: const Color(0xFF004E89),
-                    child: const Icon(Icons.send, color: Colors.white),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    FloatingActionButton(
+                      mini: true,
+                      backgroundColor: const Color(0xFF004E89),
+                      onPressed: _sendMessage,
+                      child: const Icon(Icons.send, color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+
+  bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 
   @override
   void dispose() {
