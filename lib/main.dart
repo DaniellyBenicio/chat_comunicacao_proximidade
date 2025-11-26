@@ -3,9 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'services/nearby_service.dart';
-import 'providers/theme_provider.dart';   
+import 'providers/theme_provider.dart';
 import 'views/login.dart';
-import 'components/nav_bar.dart';
+import 'views/home_screen.dart';           
+import 'components/nav_bar.dart';          
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,14 +19,22 @@ class GeoTalkApp extends StatelessWidget {
 
   Future<Widget> _determineInitialScreen() async {
     final prefs = await SharedPreferences.getInstance();
-    final hasCredentials = prefs.containsKey('user_credentials');
-    final savedName = prefs.getString('userDisplayName') ?? 'Usuário';
 
+    final bool onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
-    final nearbyService = NearbyService();
-    nearbyService.userDisplayName = savedName;
+    if (!onboardingCompleted) {
 
-    return hasCredentials ? const BottomNavBar() : const Login();
+      return const HomeScreen();
+    }
+    final bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+
+    if (isLoggedIn) {
+      final savedName = prefs.getString('userDisplayName') ?? 'Usuário';
+      return const BottomNavBar();
+    } else {
+  
+      return const Login();
+    }
   }
 
   @override
@@ -33,7 +42,7 @@ class GeoTalkApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => NearbyService()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()), 
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -54,7 +63,7 @@ class GeoTalkApp extends StatelessWidget {
               ),
               useMaterial3: true,
             ),
-            themeMode: themeProvider.themeMode, 
+            themeMode: themeProvider.themeMode,
             home: FutureBuilder<Widget>(
               future: _determineInitialScreen(),
               builder: (context, snapshot) {
@@ -62,15 +71,16 @@ class GeoTalkApp extends StatelessWidget {
                   return snapshot.data!;
                 }
 
-                return Scaffold(
-                  backgroundColor: const Color(0xFF004E89),
+            
+                return const Scaffold(
+                  backgroundColor: Color(0xFF004E89),
                   body: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.wifi_tethering, size: 80, color: Colors.white),
-                        const SizedBox(height: 32),
-                        const Text(
+                        SizedBox(height: 32),
+                        Text(
                           'GeoTalk',
                           style: TextStyle(
                             fontSize: 36,
@@ -78,11 +88,8 @@ class GeoTalkApp extends StatelessWidget {
                             color: Colors.white,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        CircularProgressIndicator(
-                          color: Colors.white,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withOpacity(0.8)),
-                        ),
+                        SizedBox(height: 24),
+                        CircularProgressIndicator(color: Colors.white),
                       ],
                     ),
                   ),
