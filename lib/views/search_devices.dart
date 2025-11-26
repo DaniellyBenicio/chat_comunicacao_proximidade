@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:chat_de_conversa/services/nearby_service.dart';
-import 'package:chat_de_conversa/views/ChatScreen.dart';
 import 'package:provider/provider.dart';
+import '../services/nearby_service.dart';
+import 'package:chat_de_conversa/views/ChatScreen.dart';
 
 class SearchDevices extends StatelessWidget {
   const SearchDevices({super.key});
@@ -37,14 +37,16 @@ class SearchDevices extends StatelessWidget {
                     if (v) {
                       final granted = await service.requestPermissions();
                       if (!granted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Permissões necessárias! Ative todas.",
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Permissões necessárias! Ative todas.",
+                              ),
+                              backgroundColor: Colors.red,
                             ),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
+                          );
+                        }
                         return;
                       }
                       await service.startAdvertising();
@@ -128,17 +130,37 @@ class SearchDevices extends StatelessWidget {
                     final device = devices[i];
                     final id = device.endpointId;
                     final conectado = service.connectedEndpoints.contains(id);
+                    final conectando = service.isConnectingTo(id);
 
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       elevation: 3,
                       child: ListTile(
+                        onTap: conectado
+                            ? null
+                            : () async {
+                                final success = await service.connectToDevice(
+                                  id,
+                                );
+                                if (!success && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        "Não foi possível conectar com ${service.getDisplayName(id)}",
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
                         leading: CircleAvatar(
                           backgroundColor: conectado
                               ? Colors.green
-                              : Colors.blue,
+                              : (conectando ? Colors.orange : Colors.blue),
                           child: Icon(
-                            conectado ? Icons.wifi : Icons.wifi_find,
+                            conectado
+                                ? Icons.wifi
+                                : (conectando ? Icons.sync : Icons.wifi_find),
                             color: Colors.white,
                           ),
                         ),
@@ -147,9 +169,15 @@ class SearchDevices extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(
-                          conectado ? "Conectado" : "Conectando...",
+                          conectado
+                              ? "Conectado"
+                              : (conectando
+                                    ? "Conectando..."
+                                    : "Toque para conectar"),
                           style: TextStyle(
-                            color: conectado ? Colors.green : Colors.orange,
+                            color: conectado
+                                ? Colors.green
+                                : (conectando ? Colors.orange : Colors.grey),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -175,13 +203,15 @@ class SearchDevices extends StatelessWidget {
                                   backgroundColor: Colors.green,
                                 ),
                               )
-                            : const SizedBox(
+                            : conectando
+                            ? const SizedBox(
                                 width: 30,
                                 height: 30,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                 ),
-                              ),
+                              )
+                            : const Icon(Icons.arrow_forward_ios, size: 18),
                       ),
                     );
                   },

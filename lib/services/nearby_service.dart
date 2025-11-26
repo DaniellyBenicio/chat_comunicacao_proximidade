@@ -24,7 +24,8 @@ class NearbyService with ChangeNotifier {
   final Map<String, NearbyDevice> discoveredDevices = {};
   final Set<String> connectedEndpoints = {};
   final Map<String, String> _realNames = {};
-  final Set<String> _connectionRequested = {};
+  final Set<String> _connectionRequested =
+      {}; 
 
   final StreamController<Map<String, dynamic>> _messageController =
       StreamController<Map<String, dynamic>>.broadcast();
@@ -32,6 +33,40 @@ class NearbyService with ChangeNotifier {
 
   bool get isAdvertising => _isAdvertising;
   bool get isDiscovering => _isDiscovering;
+
+  Future<bool> connectToDevice(String endpointId) async {
+    if (connectedEndpoints.contains(endpointId)) return true;
+    if (_connectionRequested.contains(endpointId)) return false;
+
+    _connectionRequested.add(endpointId);
+    notifyListeners();
+
+    try {
+      await Nearby().requestConnection(
+        userDisplayName,
+        endpointId,
+        onConnectionInitiated: _onConnectionInitiated,
+        onConnectionResult: (id, status) {
+          _connectionRequested.remove(id);
+          if (status == Status.CONNECTED) {
+            connectedEndpoints.add(id);
+            _updateDeviceConnection(id, true);
+          }
+          notifyListeners();
+        },
+        onDisconnected: _cleanupEndpoint,
+      );
+      return true;
+    } catch (e) {
+      _connectionRequested.remove(endpointId);
+      notifyListeners();
+      print("[Nearby] Erro ao conectar com $endpointId: $e");
+      return false;
+    }
+  }
+
+  bool isConnectingTo(String endpointId) =>
+      _connectionRequested.contains(endpointId);
 
   Future<void> _initDeviceName() async {
     final prefs = await SharedPreferences.getInstance();
@@ -43,7 +78,6 @@ class NearbyService with ChangeNotifier {
       await prefs.setString('userDisplayName', userDisplayName);
     }
     notifyListeners();
-    print("[Nearby] Nome do dispositivo carregado: $userDisplayName");
   }
 
   Future<String> _getDeviceName() async {
@@ -77,10 +111,7 @@ class NearbyService with ChangeNotifier {
       print("[Nearby] Permissões negadas!");
       return;
     }
-
-    if (userDisplayName.isEmpty) {
-      await _initDeviceName();
-    }
+    if (userDisplayName.isEmpty) await _initDeviceName();
 
     await startAdvertising();
     await startDiscovery();
@@ -104,7 +135,6 @@ class NearbyService with ChangeNotifier {
       );
       _isAdvertising = true;
       notifyListeners();
-      print("[Nearby] Advertising iniciado");
     } catch (e) {
       print("[Nearby] Erro advertising: $e");
     }
@@ -130,54 +160,25 @@ class NearbyService with ChangeNotifier {
           );
           notifyListeners();
 
-          if (!connectedEndpoints.contains(id) &&
-              !_connectionRequested.contains(id)) {
-            _requestConnectionOnce(id);
-          }
         },
         onEndpointLost: (id) {
           if (id == null) return;
           if (!connectedEndpoints.contains(id)) {
             discoveredDevices.remove(id);
             _realNames.remove(id);
-            notifyListeners();
           } else {
             final dev = discoveredDevices[id];
             if (dev != null) {
               discoveredDevices[id] = dev.copyWith(isAvailable: false);
-              notifyListeners();
             }
           }
+          notifyListeners();
         },
       );
       _isDiscovering = true;
       notifyListeners();
-      print("[Nearby] Discovery iniciado");
     } catch (e) {
       print("[Nearby] Erro discovery: $e");
-    }
-  }
-
-  void _requestConnectionOnce(String endpointId) async {
-    if (_connectionRequested.contains(endpointId)) return;
-    _connectionRequested.add(endpointId);
-
-    try {
-      await Nearby().requestConnection(
-        userDisplayName,
-        endpointId,
-        onConnectionInitiated: _onConnectionInitiated,
-        onConnectionResult: (id, status) {
-          _connectionRequested.remove(id);
-          if (status == Status.CONNECTED) {
-            connectedEndpoints.add(id);
-            _updateDeviceConnection(id, true);
-          }
-        },
-        onDisconnected: _cleanupEndpoint,
-      );
-    } catch (e) {
-      _connectionRequested.remove(endpointId);
     }
   }
 
