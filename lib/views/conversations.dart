@@ -163,7 +163,6 @@ class _ConversationsState extends State<Conversations> {
                     hintText: "Buscar conversas...",
                     prefixIcon: const Icon(Icons.search),
                     filled: true,
-                    fillColor: Colors.grey[200],
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),

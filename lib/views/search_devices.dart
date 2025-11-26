@@ -11,7 +11,6 @@ class SearchDevices extends StatelessWidget {
     return Column(
       children: [
         AppBar(
-          automaticallyImplyLeading: false,
           title: const Text(
             'Conexões',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),

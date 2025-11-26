@@ -34,5 +34,19 @@ class AppTheme {
       selectedItemColor: Color(0xFF004E89),
       unselectedItemColor: Colors.grey,
     ),
+
+    inputDecorationTheme: const InputDecorationTheme(
+      filled: true,
+      fillColor: Color(0xFF2A2A2A),
+      hintStyle: TextStyle(color: Colors.grey),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(25)),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(25)),
+        borderSide: BorderSide(color: Color(0xFF004E89), width: 2),
+      ),
+    ),
   );
 }

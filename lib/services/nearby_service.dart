@@ -203,6 +203,7 @@ class NearbyService with ChangeNotifier {
           endpointId: endpointId,
           displayName: getDisplayName(endpointId),
           message: message,
+          isFromMe: false,
         );
       },
     );
@@ -251,6 +252,7 @@ class NearbyService with ChangeNotifier {
         endpointId: endpointId,
         displayName: getDisplayName(endpointId),
         message: message,
+        isFromMe: true,
       );
     } catch (e) {
       debugPrint("Erro ao enviar: $e");
@@ -284,6 +286,7 @@ class NearbyService with ChangeNotifier {
     required String endpointId,
     required String displayName,
     required String message,
+    required bool isFromMe,
   }) {
     final now = DateTime.now();
     final index = _savedConversations.indexWhere(
@@ -291,12 +294,14 @@ class NearbyService with ChangeNotifier {
     );
     if (index >= 0) {
       final old = _savedConversations[index];
+      final newUnreadCount = isFromMe
+        ? 0
+        : old.unreadCount + 1;
+
       _savedConversations[index] = old.copyWith(
         lastMessage: message,
         lastMessageTime: now,
-        unreadCount: connectedEndpoints.contains(endpointId)
-            ? 0
-            : old.unreadCount + 1,
+        unreadCount: newUnreadCount,
       );
     } else {
       _savedConversations.add(
@@ -305,7 +310,7 @@ class NearbyService with ChangeNotifier {
           displayName: displayName,
           lastMessage: message,
           lastMessageTime: now,
-          unreadCount: 1,
+          unreadCount: isFromMe ? 0 : 1,
         ),
       );
     }
