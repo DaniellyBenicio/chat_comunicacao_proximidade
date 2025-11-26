@@ -21,66 +21,76 @@ class SearchDevices extends StatelessWidget {
           elevation: 0,
         ),
 
-        // ===== TORNA-ME VISÍVEL + NOME DO MEU DISPOSITIVO =====
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tornar-me visível',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 4),
-                  // ← AQUI MOSTRA O NOME DO SEU CELULAR
-                  Text(
-                    'Meu nome:',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
+              const Text(
+                'Tornar-me visível',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-              Column(
-                children: [
-                  Consumer<NearbyService>(
-                    builder: (context, service, _) => Switch(
-                      value: service.isAdvertising,
-                      onChanged: (v) async {
-                        if (v) {
-                          final granted = await service.requestPermissions();
-                          if (!granted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Permissões necessárias! Ative todas."),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                            return;
-                          }
-                          await service.startAdvertising();
-                          await service.startDiscovery();
-                        } else {
-                          await service.stopAdvertising();
-                          await service.stopDiscovery();
-                        }
-                      },
-                      activeColor: const Color(0xFF004E89),
+              Consumer<NearbyService>(
+                builder: (context, service, _) => Switch(
+                  value: service.isAdvertising,
+                  onChanged: (v) async {
+                    if (v) {
+                      final granted = await service.requestPermissions();
+                      if (!granted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Permissões necessárias! Ative todas.",
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+                      await service.startAdvertising();
+                      await service.startDiscovery();
+                    } else {
+                      await service.stopAdvertising();
+                      await service.stopDiscovery();
+                    }
+                  },
+                  activeColor: const Color(0xFF004E89),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Meu Dispositivo:',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 6),
+              Consumer<NearbyService>(
+                builder: (context, service, _) => Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    service.userDisplayName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF004E89),
                     ),
                   ),
-                  // ← NOME DO SEU DISPOSITIVO AQUI
-                  Consumer<NearbyService>(
-                    builder: (context, service, _) => Text(
-                      service.userDisplayName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF004E89),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -88,7 +98,6 @@ class SearchDevices extends StatelessWidget {
 
         const Divider(height: 30, thickness: 1),
 
-        // ===== LISTA DE DISPOSITIVOS PRÓXIMOS =====
         Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -125,7 +134,9 @@ class SearchDevices extends StatelessWidget {
                       elevation: 3,
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: conectado ? Colors.green : Colors.blue,
+                          backgroundColor: conectado
+                              ? Colors.green
+                              : Colors.blue,
                           child: Icon(
                             conectado ? Icons.wifi : Icons.wifi_find,
                             color: Colors.white,
@@ -155,7 +166,10 @@ class SearchDevices extends StatelessWidget {
                                     ),
                                   );
                                 },
-                                icon: const Icon(Icons.chat, color: Colors.white),
+                                icon: const Icon(
+                                  Icons.chat,
+                                  color: Colors.white,
+                                ),
                                 label: const Text("Chat"),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
@@ -164,7 +178,9 @@ class SearchDevices extends StatelessWidget {
                             : const SizedBox(
                                 width: 30,
                                 height: 30,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               ),
                       ),
                     );

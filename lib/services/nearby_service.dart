@@ -4,53 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../models/nearby_device.dart';
 
-/// ============================================
-/// MODEL DO DISPOSITIVO
-/// ============================================
-class NearbyDevice {
-  final String endpointId;
-  final String endpointName;
-  final String displayName;
-  final bool isAvailable;
-  final bool isConnected;
-
-  NearbyDevice({
-    required this.endpointId,
-    required this.endpointName,
-    this.displayName = "",
-    this.isAvailable = true,
-    this.isConnected = false,
-  });
-
-  NearbyDevice copyWith({
-    String? endpointName,
-    String? displayName,
-    bool? isAvailable,
-    bool? isConnected,
-  }) {
-    return NearbyDevice(
-      endpointId: endpointId,
-      endpointName: endpointName ?? this.endpointName,
-      displayName: displayName ?? this.displayName,
-      isAvailable: isAvailable ?? this.isAvailable,
-      isConnected: isConnected ?? this.isConnected,
-    );
-  }
-}
-
-/// ============================================
-/// SERVIÇO NEARBY - VERSÃO FINAL COM STREAM DE MENSAGENS
-/// ============================================
 class NearbyService with ChangeNotifier {
   static final NearbyService _instance = NearbyService._internal();
   factory NearbyService() => _instance;
-  NearbyService._internal();
+  NearbyService._internal() {
+    _initDeviceName();
+  }
 
   static const String _serviceId = "com.geotalk.app";
   static const Strategy _strategy = Strategy.P2P_CLUSTER;
 
-  String userDisplayName = "Usuário";
+  String userDisplayName = "";
   bool _isAdvertising = false;
   bool _isDiscovering = false;
 
@@ -59,7 +26,6 @@ class NearbyService with ChangeNotifier {
   final Map<String, String> _realNames = {};
   final Set<String> _connectionRequested = {};
 
-  // STREAM PARA AS MENSAGENS RECEBIDAS (ESSA É A MÁGICA!)
   final StreamController<Map<String, dynamic>> _messageController =
       StreamController<Map<String, dynamic>>.broadcast();
   Stream<Map<String, dynamic>> get messageStream => _messageController.stream;
@@ -67,9 +33,19 @@ class NearbyService with ChangeNotifier {
   bool get isAdvertising => _isAdvertising;
   bool get isDiscovering => _isDiscovering;
 
-  // ============================================================
-  // NOME DO DISPOSITIVO
-  // ============================================================
+  Future<void> _initDeviceName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedName = prefs.getString('userDisplayName');
+    if (savedName != null && savedName.isNotEmpty) {
+      userDisplayName = savedName;
+    } else {
+      userDisplayName = await _getDeviceName();
+      await prefs.setString('userDisplayName', userDisplayName);
+    }
+    notifyListeners();
+    print("[Nearby] Nome do dispositivo carregado: $userDisplayName");
+  }
+
   Future<String> _getDeviceName() async {
     try {
       final androidInfo = await DeviceInfoPlugin().androidInfo;
@@ -79,18 +55,20 @@ class NearbyService with ChangeNotifier {
     }
   }
 
-  // ============================================================
-  // PERMISSÕES + INICIALIZAÇÃO
-  // ============================================================
   Future<bool> requestPermissions() async {
-    final statuses = await [
+    final permissions = [
       Permission.locationWhenInUse,
       Permission.bluetoothScan,
       Permission.bluetoothAdvertise,
       Permission.bluetoothConnect,
-      Permission.nearbyWifiDevices,
-    ].request();
+    ];
 
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    if ((androidInfo.version.sdkInt ?? 0) >= 33) {
+      permissions.add(Permission.nearbyWifiDevices);
+    }
+
+    final statuses = await permissions.request();
     return statuses.values.every((s) => s.isGranted || s.isLimited);
   }
 
@@ -100,16 +78,14 @@ class NearbyService with ChangeNotifier {
       return;
     }
 
-    userDisplayName = await _getDeviceName();
-    print("[Nearby] Meu nome: $userDisplayName");
+    if (userDisplayName.isEmpty) {
+      await _initDeviceName();
+    }
 
     await startAdvertising();
     await startDiscovery();
   }
 
-  // ============================================================
-  // ADVERTISING + DISCOVERY
-  // ============================================================
   Future<void> startAdvertising() async {
     if (_isAdvertising) return;
     try {
@@ -117,18 +93,18 @@ class NearbyService with ChangeNotifier {
         userDisplayName,
         _strategy,
         serviceId: _serviceId,
-        onConnectionInitiated: (id, info) => _onConnectionInitiated(id, info),
+        onConnectionInitiated: _onConnectionInitiated,
         onConnectionResult: (id, status) {
           if (status == Status.CONNECTED) {
             connectedEndpoints.add(id);
             _updateDeviceConnection(id, true);
           }
         },
-        onDisconnected: (id) => _cleanupEndpoint(id),
+        onDisconnected: _cleanupEndpoint,
       );
       _isAdvertising = true;
-      print("[Nearby] Advertising iniciado");
       notifyListeners();
+      print("[Nearby] Advertising iniciado");
     } catch (e) {
       print("[Nearby] Erro advertising: $e");
     }
@@ -143,7 +119,6 @@ class NearbyService with ChangeNotifier {
         serviceId: _serviceId,
         onEndpointFound: (id, name, serviceId) {
           if (id == null) return;
-          print("[Discovery] Encontrado: $id → $name");
           _realNames[id] = name;
 
           discoveredDevices[id] = NearbyDevice(
@@ -155,7 +130,8 @@ class NearbyService with ChangeNotifier {
           );
           notifyListeners();
 
-          if (!connectedEndpoints.contains(id) && !_connectionRequested.contains(id)) {
+          if (!connectedEndpoints.contains(id) &&
+              !_connectionRequested.contains(id)) {
             _requestConnectionOnce(id);
           }
         },
@@ -175,8 +151,8 @@ class NearbyService with ChangeNotifier {
         },
       );
       _isDiscovering = true;
-      print("[Nearby] Discovery iniciado");
       notifyListeners();
+      print("[Nearby] Discovery iniciado");
     } catch (e) {
       print("[Nearby] Erro discovery: $e");
     }
@@ -190,7 +166,7 @@ class NearbyService with ChangeNotifier {
       await Nearby().requestConnection(
         userDisplayName,
         endpointId,
-        onConnectionInitiated: (id, info) => _onConnectionInitiated(id, info),
+        onConnectionInitiated: _onConnectionInitiated,
         onConnectionResult: (id, status) {
           _connectionRequested.remove(id);
           if (status == Status.CONNECTED) {
@@ -198,19 +174,14 @@ class NearbyService with ChangeNotifier {
             _updateDeviceConnection(id, true);
           }
         },
-        onDisconnected: (id) => _cleanupEndpoint(id),
+        onDisconnected: _cleanupEndpoint,
       );
     } catch (e) {
       _connectionRequested.remove(endpointId);
     }
   }
 
-  // ============================================================
-  // ACEITA CONEXÃO + ENVIA NOME + RECEBE MENSAGENS
-  // ============================================================
   void _onConnectionInitiated(String id, ConnectionInfo info) async {
-    print("[Nearby] Conexão aceita: $id");
-
     Nearby().acceptConnection(
       id,
       onPayLoadRecieved: (endpointId, payload) {
@@ -218,7 +189,6 @@ class NearbyService with ChangeNotifier {
 
         final message = String.fromCharCodes(payload.bytes!);
 
-        // 1. Trata o nome real enviado pelo outro dispositivo
         if (message.startsWith("@@NAME@@:")) {
           final realName = message.substring(9);
           _realNames[endpointId] = realName;
@@ -230,23 +200,15 @@ class NearbyService with ChangeNotifier {
           return;
         }
 
-        // 2. Mensagem normal → DISPARA PARA A TELA DO CHAT!
-        print("[Mensagem recebida] $endpointId: $message");
-
         _messageController.add({
           'endpointId': endpointId,
           'message': message,
           'time': DateTime.now(),
         });
       },
-      onPayloadTransferUpdate: (endpointId, update) {
-        if (update.status == PayloadStatus.SUCCESS) {
-          print("[Payload] OK → $endpointId");
-        }
-      },
+      onPayloadTransferUpdate: (endpointId, update) {},
     );
 
-    // Envia meu nome real
     await Future.delayed(const Duration(milliseconds: 400));
     sendMessage(id, "@@NAME@@:$userDisplayName");
 
@@ -268,12 +230,8 @@ class NearbyService with ChangeNotifier {
     _updateDeviceConnection(id, false);
   }
 
-  // ============================================================
-  // ENVIO DE MENSAGEM
-  // ============================================================
   Future<void> sendMessage(String endpointId, String message) async {
     if (!connectedEndpoints.contains(endpointId)) return;
-
     try {
       await Nearby().sendBytesPayload(
         endpointId,
@@ -284,9 +242,6 @@ class NearbyService with ChangeNotifier {
     }
   }
 
-  // ============================================================
-  // LIMPEZA
-  // ============================================================
   void disposeService() {
     Nearby().stopAllEndpoints();
     stopAdvertising();
