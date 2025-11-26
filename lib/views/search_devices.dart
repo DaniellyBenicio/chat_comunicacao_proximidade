@@ -62,41 +62,6 @@ class SearchDevices extends StatelessWidget {
           ),
         ),
 
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Meu Dispositivo:',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 6),
-              Consumer<NearbyService>(
-                builder: (context, service, _) => Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    service.userDisplayName,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF004E89),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
         const Divider(height: 30, thickness: 1),
 
         Expanded(
