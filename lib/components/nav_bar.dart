@@ -34,7 +34,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             label: 'Conversas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.wifi_find),
+            icon: Icon(Icons.wifi_tethering),
             label: 'Procurar',
           ),
           BottomNavigationBarItem(

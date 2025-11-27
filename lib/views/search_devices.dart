@@ -76,7 +76,7 @@ class SearchDevices extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.wifi_find, size: 80, color: Colors.grey),
+                        Icon(Icons.wifi_tethering, size: 80, color: Colors.grey),
                         SizedBox(height: 16),
                         Text(
                           'Nenhum dispositivo por perto...',
@@ -123,8 +123,8 @@ class SearchDevices extends StatelessWidget {
                               : (conectando ? Colors.orange : Colors.blue),
                           child: Icon(
                             conectado
-                                ? Icons.wifi
-                                : (conectando ? Icons.sync : Icons.wifi_find),
+                                ? Icons.wifi_tethering
+                                : (conectando ? Icons.sync : Icons.wifi_tethering),
                             color: Colors.white,
                           ),
                         ),
