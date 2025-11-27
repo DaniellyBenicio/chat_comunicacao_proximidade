@@ -154,7 +154,7 @@ class _ConversationsState extends State<Conversations> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 6),
                 child: TextField(
                   onChanged: (value) {
                     setState(() => searchText = value);
