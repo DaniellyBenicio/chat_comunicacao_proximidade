@@ -3,14 +3,14 @@
 <div align="center">
   <img src="assets/images/logo.png" width="140" alt="GeoTalk Logo"/>
   <h2>Converse com quem está perto de você — 100% offline</h2>
-  <p><strong>Wi-Fi Direct + Bluetooth • Sem internet • Sem cadastro • Totalmente gratuito</strong></p>
+  <p><strong>Wi-Fi Direct + Bluetooth • Sem internet</strong></p>
 </div>
 
 <br>
 
 ### O que é o GeoTalk?
 
-O **GeoTalk** é um aplicativo de bate-papo por proximidade que permite trocar mensagens em tempo real com pessoas que estão fisicamente perto de você, mesmo sem internet, sem Wi-Fi público e sem usar seus dados móveis.
+O **GeoTalk** é um aplicativo de bate-papo por proximidade que permite trocar mensagens em tempo real com pessoas que estão fisicamente perto de você, mesmo sem internet, sem Wi-Fi e sem usar seus dados móveis.
 
 Útil para:
 - Shows, festas e eventos
@@ -26,7 +26,7 @@ O **GeoTalk** é um aplicativo de bate-papo por proximidade que permite trocar m
 
 O app usa a tecnologia oficial do Google chamada **Nearby Connections** (`nearby_connections`) que combina:
 - Bluetooth → para descobrir quem está por perto
-- Wi-Fi Direct / Wi-Fi Aware → para enviar mensagens rápido e com baixa latência
+- Wi-Fi Direct → para enviar mensagens rápido e com baixa latência
 
 Você abre o app → ele procura automaticamente → quando outra pessoa com o GeoTalk estiver perto, vocês se conectam e já podem conversar na hora.
 
