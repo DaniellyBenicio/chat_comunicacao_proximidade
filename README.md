@@ -1,8 +1,10 @@
 # APP - Chat de Conversa — Bate-papo por Proximidade
 
 Nome do Aplicativo: GeoTalk
-- Converse com quem está perto de você — sem internet, sem Wi-Fi, sem cadastro
-- Funciona 100% offline • Wi-Fi Direct + Bluetooth • Totalmente gratuito e aberto
+- Converse com quem está perto de você! Sem internet e sem Wi-Fi.
+- Funciona 100% offline! 
+• Wi-Fi Direct + Bluetooth 
+• Totalmente gratuito e aberto
 
 ### O que é esse aplicativo?
 
