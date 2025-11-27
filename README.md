@@ -1,27 +1,79 @@
-# Documentação da Solução — Chat por Proximidade
+# APP - Chat de Conversa — Bate-papo por Proximidade
 
-Aplicativo móvel em desenvolvimento que permite a troca de mensagens entre dispositivos próximos.
+Nome do Aplicativo: GeoTalk
+- Converse com quem está perto de você — sem internet, sem Wi-Fi, sem cadastro
+- Funciona 100% offline • Wi-Fi Direct + Bluetooth • Totalmente gratuito e aberto
 
-# Instalação do Projeto
+### O que é esse aplicativo?
 
-1. Abra o terminal ou prompt de comando
-2. Navege até a pasta de destino que deseja salvar o projeto pelo próprio terminal
-3. Clone o repositório através do comando: git clone 
-5. Entre na pasta do projeto: cd chat_comunicacao_proximidade
-6. Abra a IDE: code .
-7. Abra o terminal da IDE e digite o comando: flutter run
-8. Projeto instalado com sucesso!
+**Chat de Conversa** é um aplicativo de mensagens instantâneas que permite conversar com pessoas que estão fisicamente próximas de você, mesmo sem internet, sem roteador, sem dados móveis.
+
+Ideal para:
+- Shows e festivais
+- Sala de aula / universidade
+- Metrô, ônibus, avião
+- Acampamentos, trilhas, praia
+- Lugares com internet ruim ou bloqueada
+- Qualquer situação em que você queira trocar mensagem rápido e privado
 
 
-## Getting Started
+### Como funciona?
 
-This project is a starting point for a Flutter application.
+O app usa a tecnologia **Nearby Connections** do Google (pacote oficial `nearby_connections`) que combina:
+- Bluetooth (para descobrir dispositivos próximos)
+- Wi-Fi Direct / Wi-Fi Aware (para trocar mensagens rápido e com baixa latência)
 
-A few resources to get you started if this is your first Flutter project:
+Você abre o app → ele começa a procurar pessoas → quando alguém estiver perto e com o app aberto, vocês se conectam automaticamente e podem conversar em tempo real.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Funcionalidades 
+
+- Conexão automática por proximidade
+- Troca de mensagens de texto em tempo real
+- Indicador de online/offline em tempo real
+- Bolinha verde quando a pessoa está conectada no momento
+- Contador de mensagens não lidas
+- Busca por nome
+- Excluir conversa 
+- Configurações pra modo noturno
+- Interface limpa, moderna e totalmente em português
+- Não salva nada no servidor — tudo fica só no seu celular
+
+
+### Tecnologias e Pacotes Utilizados
+
+| Tecnologia / Pacote                  | Finalidade                                      | Versão usada |
+|--------------------------------------|-------------------------------------------------|--------------|
+| Flutter + Dart                       | Framework principal do app                      | 3.24+        |
+| `nearby_connections`                 | Conexão Bluetooth + Wi-Fi Direct (Google)       | ^5.0.0       |
+| Provider                             | Gerenciamento de estado                         | ^6.1.2       |
+| SQflite                              | Banco de dados local (SQLite)                   | ^2.3.3       |
+| shared_preferences                   | Salvar nome do usuário e configurações          | ^2.3.0       |
+| intl                                 | Formatação de data e hora                       | ^0.19.0      |
+| Material 3 (You)                     | Design moderno do Google                        | Padrão       |
+
+
+### Como instalar e testar (passo a passo)
+
+# Passo 1. Clone o repositório
+git clone https://github.com/DaniellyBenicio/chat_comunicacao_proximidade.git
+
+# 2. Entre na pasta
+cd chat_de_conversa
+
+# 3. Abra o vs code
+cd .code
+# 4. Abra o terminal do vs code 
+ctrl j
+
+# 5.Baixe as dependências
+flutter pub get
+
+# 6. Conecte o cabo USB no seu conputador e no seu celular
+
+# 8. Execute no terminal do vs code:
+flutter run
+
+# 9. Aceite todas as permições no seu dispositivo
+
+# 10. Faça seu cadastro e desfrute desse app moderno.
