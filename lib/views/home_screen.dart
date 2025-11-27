@@ -25,16 +25,16 @@ class HomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 35),
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: const Color(0xFF004E89),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.wifi_tethering,
-                    size: 40,
-                    color: Colors.white,
-                  ),
+                    child: Image.asset(
+                      "assets/images/icon.png",
+                      width: 70,
+                      height: 70,
+                    ),
                 ),
                 const SizedBox(height: 35),
                 const Text(
