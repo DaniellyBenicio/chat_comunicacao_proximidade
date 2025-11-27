@@ -86,7 +86,7 @@ class _LoginScreenState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primaryColor = Color(0xFF004E89); 
+    const Color primaryColor = Color(0xFF004E89);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -111,22 +111,18 @@ class _LoginScreenState extends State<Login> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Seja bem-vindo de volta!',
+                  'Seja bem-vindo!',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
                 const SizedBox(height: 50),
 
-                // Email
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: 'E-mail',
-                    prefixIcon: Icon(
-                      Icons.email,
-                      color: primaryColor,
-                    ), 
+                    prefixIcon: Icon(Icons.email, color: primaryColor),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -141,16 +137,12 @@ class _LoginScreenState extends State<Login> {
                 ),
                 const SizedBox(height: 20),
 
-                // Senha
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscureText,
                   decoration: InputDecoration(
                     labelText: 'Senha',
-                    prefixIcon: Icon(
-                      Icons.lock,
-                      color: primaryColor,
-                    ), 
+                    prefixIcon: Icon(Icons.lock, color: primaryColor),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureText ? Icons.visibility : Icons.visibility_off,
@@ -172,7 +164,6 @@ class _LoginScreenState extends State<Login> {
                 ),
                 const SizedBox(height: 16),
 
-                // Lembrar-me
                 Row(
                   children: [
                     Checkbox(
@@ -217,22 +208,6 @@ class _LoginScreenState extends State<Login> {
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                TextButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Funcionalidade em desenvolvimento'),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    'Esqueceu a senha?',
-                    style: TextStyle(color: primaryColor),
                   ),
                 ),
 

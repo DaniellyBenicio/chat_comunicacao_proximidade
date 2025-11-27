@@ -13,15 +13,21 @@ class SearchDevices extends StatelessWidget {
         AppBar(
           title: const Text(
             'Conexões',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 21),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 21,
+              color: Colors.white,
+            ),
           ),
           centerTitle: true,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
+          backgroundColor: const Color(0xFF004E89),
+          foregroundColor: Colors.white,
+          automaticallyImplyLeading: false,
+          elevation: 2,
+          toolbarHeight: 90,
         ),
-
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -76,7 +82,11 @@ class SearchDevices extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.wifi_tethering, size: 80, color: Colors.grey),
+                        Icon(
+                          Icons.wifi_tethering,
+                          size: 80,
+                          color: Colors.grey,
+                        ),
                         SizedBox(height: 16),
                         Text(
                           'Nenhum dispositivo por perto...',
@@ -124,7 +134,9 @@ class SearchDevices extends StatelessWidget {
                           child: Icon(
                             conectado
                                 ? Icons.wifi_tethering
-                                : (conectando ? Icons.sync : Icons.wifi_tethering),
+                                : (conectando
+                                      ? Icons.sync
+                                      : Icons.wifi_tethering),
                             color: Colors.white,
                           ),
                         ),
@@ -175,7 +187,7 @@ class SearchDevices extends StatelessWidget {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.arrow_forward_ios, size: 18),
+                            : const SizedBox.shrink(),
                       ),
                     );
                   },

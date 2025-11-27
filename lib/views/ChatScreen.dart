@@ -38,10 +38,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
       final text = data['message'] as String;
 
-      final jaExiste = _messages.any((m) =>
-          m.content == text &&
-          m.sender == 'them' &&
-          DateTime.now().difference(m.timestamp).inSeconds.abs() < 5);
+      final jaExiste = _messages.any(
+        (m) =>
+            m.content == text &&
+            m.sender == 'them' &&
+            DateTime.now().difference(m.timestamp).inSeconds.abs() < 5,
+      );
 
       if (!jaExiste && mounted) {
         final novaMsg = Message(
@@ -165,7 +167,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final inicial = widget.deviceName.isNotEmpty ? widget.deviceName[0].toUpperCase() : "?";
+    final inicial = widget.deviceName.isNotEmpty
+        ? widget.deviceName[0].toUpperCase()
+        : "?";
 
     return Scaffold(
       appBar: AppBar(
@@ -175,13 +179,21 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             CircleAvatar(
               backgroundColor: Colors.white,
-              child: Text(inicial, style: const TextStyle(color: Color(0xFF004E89), fontWeight: FontWeight.bold)),
+              child: Text(
+                inicial,
+                style: const TextStyle(
+                  color: Color(0xFF004E89),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             const SizedBox(width: 12),
             Text(widget.deviceName),
           ],
         ),
-        actions: [IconButton(icon: const Icon(Icons.more_vert), onPressed: _openMenu)],
+        actions: [
+          IconButton(icon: const Icon(Icons.more_vert), onPressed: _openMenu),
+        ],
       ),
       body: Container(
         color: chatBackground,
@@ -189,7 +201,13 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Expanded(
               child: _messages.isEmpty
-                  ? const Center(child: Text("Nenhuma mensagem ainda.\nComece o papo!", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)))
+                  ? const Center(
+                      child: Text(
+                        "Nenhuma mensagem ainda.\nComece o papo!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
                   : ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.all(12),
@@ -197,40 +215,85 @@ class _ChatScreenState extends State<ChatScreen> {
                       itemBuilder: (context, i) {
                         final msg = _messages[i];
                         final souEu = msg.sender == 'me';
-                        final mostrarData = i == 0 || !_isSameDay(msg.timestamp, _messages[i - 1].timestamp);
+                        final mostrarData =
+                            i == 0 ||
+                            !_isSameDay(
+                              msg.timestamp,
+                              _messages[i - 1].timestamp,
+                            );
 
                         return Column(
                           children: [
                             if (mostrarData)
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                                  decoration: BoxDecoration(color: Colors.black12, borderRadius: BorderRadius.circular(20)),
-                                  child: Text(_formatDayHeader(msg.timestamp), style: const TextStyle(fontSize: 12)),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black12,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    _formatDayHeader(msg.timestamp),
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
                                 ),
                               ),
                             Align(
-                              alignment: souEu ? Alignment.centerRight : Alignment.centerLeft,
+                              alignment: souEu
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
                               child: Container(
-                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.78),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.78,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
                                 margin: const EdgeInsets.symmetric(vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: souEu ? const Color(0xFF004E89) : Colors.grey[200],
+                                  color: souEu
+                                      ? const Color(0xFF004E89)
+                                      : Colors.grey[200],
                                   borderRadius: BorderRadius.only(
                                     topLeft: const Radius.circular(18),
                                     topRight: const Radius.circular(18),
-                                    bottomLeft: souEu ? const Radius.circular(18) : const Radius.circular(4),
-                                    bottomRight: souEu ? const Radius.circular(4) : const Radius.circular(18),
+                                    bottomLeft: souEu
+                                        ? const Radius.circular(18)
+                                        : const Radius.circular(4),
+                                    bottomRight: souEu
+                                        ? const Radius.circular(4)
+                                        : const Radius.circular(18),
                                   ),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    Text(msg.content, style: TextStyle(color: souEu ? Colors.white : Colors.black87)),
+                                    Text(
+                                      msg.content,
+                                      style: TextStyle(
+                                        color: souEu
+                                            ? Colors.white
+                                            : Colors.black87,
+                                      ),
+                                    ),
                                     const SizedBox(height: 4),
-                                    Text(DateFormat('HH:mm').format(msg.timestamp), style: TextStyle(fontSize: 11, color: souEu ? Colors.white70 : Colors.black54)),
+                                    Text(
+                                      DateFormat('HH:mm').format(msg.timestamp),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: souEu
+                                            ? Colors.white70
+                                            : Colors.black54,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -254,8 +317,24 @@ class _ChatScreenState extends State<ChatScreen> {
                           hintText: "Digite uma mensagem...",
                           filled: true,
                           fillColor: Colors.white,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide(
+                              color: Colors.grey.shade400,
+                              width: 1.4,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(
+                              color: Color(0xFF004E89),
+                              width: 1.8,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                     ),
@@ -276,7 +355,8 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 
   @override
   void dispose() {

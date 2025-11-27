@@ -73,7 +73,9 @@ class _ConversationsState extends State<Conversations> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF004E89),
         foregroundColor: Colors.white,
+        automaticallyImplyLeading: false,
         elevation: 2,
+        toolbarHeight: 90,
         title: Row(
           children: [
             Stack(
@@ -162,11 +164,25 @@ class _ConversationsState extends State<Conversations> {
                   decoration: InputDecoration(
                     hintText: "Buscar conversas...",
                     prefixIcon: const Icon(Icons.search),
-                    filled: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    filled: true,
+                    fillColor: Colors.white,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF4A4A4A),
+                        width: 1.3,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF004E89),
+                        width: 2,
+                      ),
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
-                      borderSide: BorderSide.none,
                     ),
                   ),
                 ),

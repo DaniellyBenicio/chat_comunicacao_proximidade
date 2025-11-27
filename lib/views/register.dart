@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chat_de_conversa/views/login.dart';
-import '../controllers/auth_controller.dart'; 
+import '../controllers/auth_controller.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -16,7 +16,7 @@ class _RegisterState extends State<Register> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final AuthController _authController = AuthController();
-  
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
@@ -39,10 +39,10 @@ class _RegisterState extends State<Register> {
         alignment: Alignment.topCenter,
         child: Padding(
           padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 10.0, 
+            top: MediaQuery.of(context).padding.top + 10.0,
           ),
           child: Material(
-            elevation: 6.0, 
+            elevation: 6.0,
             borderRadius: BorderRadius.circular(12),
             color: Colors.transparent,
             child: Container(
@@ -50,7 +50,10 @@ class _RegisterState extends State<Register> {
                 maxWidth: MediaQuery.of(context).size.width * 0.9,
                 minWidth: 200.0,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 14.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 14.0,
+              ),
               decoration: BoxDecoration(
                 color: isError
                     ? Colors.red[700]
@@ -111,7 +114,6 @@ class _RegisterState extends State<Register> {
       _showSnackBar('As senhas não coincidem.', isError: true);
       return;
     }
-    
 
     setState(() {
       _isLoading = true;
@@ -137,7 +139,10 @@ class _RegisterState extends State<Register> {
         );
       }
     } else {
-      _showSnackBar(result['message'] ?? 'Erro desconhecido ao cadastrar.', isError: true);
+      _showSnackBar(
+        result['message'] ?? 'Erro desconhecido ao cadastrar.',
+        isError: true,
+      );
     }
   }
 
@@ -157,7 +162,10 @@ class _RegisterState extends State<Register> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).secondaryHeaderColor),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).secondaryHeaderColor,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -200,7 +208,9 @@ class _RegisterState extends State<Register> {
                   decoration: InputDecoration(
                     labelText: 'Nome',
                     prefixIcon: Icon(Icons.person, color: primaryColor),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: primaryColor),
                       borderRadius: BorderRadius.circular(10),
@@ -214,7 +224,9 @@ class _RegisterState extends State<Register> {
                   controller: _emailController,
                   validator: (value) {
                     _validateRequired(value, 'E-mail');
-                    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                    final emailRegex = RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    );
                     if (!emailRegex.hasMatch(value!)) {
                       return 'O e-mail fornecido não é válido.';
                     }
@@ -223,7 +235,9 @@ class _RegisterState extends State<Register> {
                   decoration: InputDecoration(
                     labelText: 'E-mail',
                     prefixIcon: Icon(Icons.email, color: primaryColor),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: primaryColor),
                       borderRadius: BorderRadius.circular(10),
@@ -237,21 +251,27 @@ class _RegisterState extends State<Register> {
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   validator: (value) {
-                    if (value == null || value.isEmpty) return 'Senha é obrigatória.';
-                    if (value.length < 6) return 'A senha deve ter no mínimo 6 caracteres.';
+                    if (value == null || value.isEmpty)
+                      return 'Senha é obrigatória.';
+                    if (value.length < 6)
+                      return 'A senha deve ter no mínimo 6 caracteres.';
                     return null;
                   },
                   decoration: InputDecoration(
                     labelText: 'Senha',
                     prefixIcon: Icon(Icons.lock, color: primaryColor),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: primaryColor),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: primaryColor,
                       ),
                       onPressed: () {
@@ -268,20 +288,25 @@ class _RegisterState extends State<Register> {
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
                   validator: (value) {
-                    if (value != _passwordController.text) return 'As senhas não coincidem.';
+                    if (value != _passwordController.text)
+                      return 'As senhas não coincidem.';
                     return null;
                   },
                   decoration: InputDecoration(
                     labelText: 'Confirmar Senha',
                     prefixIcon: Icon(Icons.lock_reset, color: primaryColor),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: primaryColor),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                        _obscureConfirmPassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: primaryColor,
                       ),
                       onPressed: () {
@@ -304,11 +329,14 @@ class _RegisterState extends State<Register> {
                     ),
                     elevation: 5,
                   ),
-                  child: _isLoading 
+                  child: _isLoading
                       ? const SizedBox(
                           height: 24,
                           width: 24,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
                         )
                       : const Text(
                           'Cadastrar',
@@ -323,7 +351,7 @@ class _RegisterState extends State<Register> {
 
                 TextButton(
                   onPressed: () {
-                    Navigator.pushReplacement( 
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => const Login()),
                     );
@@ -331,7 +359,7 @@ class _RegisterState extends State<Register> {
                   child: Text(
                     'Já tenho uma conta',
                     style: TextStyle(
-                      color: Theme.of(context).secondaryHeaderColor,
+                      color: Theme.of(context).primaryColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

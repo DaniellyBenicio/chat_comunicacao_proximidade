@@ -28,6 +28,10 @@ class SettingsScreen extends StatelessWidget {
         ),
         centerTitle: true,
         elevation: 2,
+        automaticallyImplyLeading: false,
+        backgroundColor: const Color(0xFF004E89),
+        foregroundColor: Colors.white,
+        toolbarHeight: 90,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
