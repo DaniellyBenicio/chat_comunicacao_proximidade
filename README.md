@@ -1,7 +1,7 @@
 # GeoTalk — Chat por Proximidade 
 
 <div align="center">
-  <img src="assets/images/logo.png" width="140" alt="GeoTalk Logo"/>
+  <img src="assets/images/icon.png" width="160" alt="GeoTalk Logo"/>
   <h2>Converse com quem está perto de você — 100% offline</h2>
   <p><strong>Wi-Fi Direct + Bluetooth • Sem internet</strong></p>
 </div>
