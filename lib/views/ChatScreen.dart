@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../services/nearby_service.dart';
 import '../services/database_chat.dart';
 import '../models/message.dart';
+import '../components/notification_service.dart';
 
 class ChatScreen extends StatefulWidget {
   final String deviceName;
@@ -38,20 +39,13 @@ class _ChatScreenState extends State<ChatScreen> {
       if (data['endpointId'] != widget.endpointId) return;
 
       final text = data['message'] as String;
-
-      final jaExiste = _messages.any(
-        (m) =>
-            m.content == text &&
-            m.sender == 'them' &&
-            DateTime.now().difference(m.timestamp).inSeconds.abs() < 5,
+      final novaMsg = Message(
+        sender: 'them',
+        content: text,
+        timestamp: DateTime.now(),
       );
 
-      if (!jaExiste && mounted) {
-        final novaMsg = Message(
-          sender: 'them',
-          content: text,
-          timestamp: DateTime.now(),
-        );
+      if (mounted) {
         setState(() => _messages.add(novaMsg));
         _scrollToBottom();
       }
@@ -170,10 +164,7 @@ class _ChatScreenState extends State<ChatScreen> {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Theme.of(context).dividerColor,
-            width: 2,
-          ),
+          border: Border.all(color: Theme.of(context).dividerColor, width: 2),
         ),
         child: _customBackground == color
             ? const Icon(Icons.check, color: Colors.white)
@@ -218,10 +209,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: _openMenu,
-          ),
+          IconButton(icon: const Icon(Icons.more_vert), onPressed: _openMenu),
         ],
       ),
       backgroundColor: backgroundColor,
@@ -235,7 +223,11 @@ class _ChatScreenState extends State<ChatScreen> {
                       child: Text(
                         "Nenhuma mensagem ainda.\nComece o papo!",
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: theme.textTheme.bodyMedium?.color?.withOpacity(0.6)),
+                        style: TextStyle(
+                          color: theme.textTheme.bodyMedium?.color?.withOpacity(
+                            0.6,
+                          ),
+                        ),
                       ),
                     )
                   : ListView.builder(
@@ -245,18 +237,29 @@ class _ChatScreenState extends State<ChatScreen> {
                       itemBuilder: (context, i) {
                         final msg = _messages[i];
                         final souEu = msg.sender == 'me';
-                        final mostrarData = i == 0 ||
-                            !_isSameDay(msg.timestamp, _messages[i - 1].timestamp);
+                        final mostrarData =
+                            i == 0 ||
+                            !_isSameDay(
+                              msg.timestamp,
+                              _messages[i - 1].timestamp,
+                            );
 
                         return Column(
                           children: [
                             if (mostrarData)
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 6,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: _getContrastColor(backgroundColor).withOpacity(0.15),
+                                    color: _getContrastColor(
+                                      backgroundColor,
+                                    ).withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
@@ -264,28 +267,42 @@ class _ChatScreenState extends State<ChatScreen> {
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w500,
-                                      color: _getContrastColor(backgroundColor).withOpacity(0.85),
+                                      color: _getContrastColor(
+                                        backgroundColor,
+                                      ).withOpacity(0.85),
                                     ),
                                   ),
                                 ),
                               ),
                             Align(
-                              alignment: souEu ? Alignment.centerRight : Alignment.centerLeft,
+                              alignment: souEu
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
                               child: Container(
                                 constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.78,
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.78,
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
                                 margin: const EdgeInsets.symmetric(vertical: 3),
                                 decoration: BoxDecoration(
                                   color: souEu
                                       ? const Color(0xFF004E89)
-                                      : (isDark ? Colors.grey[800] : Colors.grey[200]),
+                                      : (isDark
+                                            ? Colors.grey[800]
+                                            : Colors.grey[200]),
                                   borderRadius: BorderRadius.only(
                                     topLeft: const Radius.circular(18),
                                     topRight: const Radius.circular(18),
-                                    bottomLeft: souEu ? const Radius.circular(18) : const Radius.circular(4),
-                                    bottomRight: souEu ? const Radius.circular(4) : const Radius.circular(18),
+                                    bottomLeft: souEu
+                                        ? const Radius.circular(18)
+                                        : const Radius.circular(4),
+                                    bottomRight: souEu
+                                        ? const Radius.circular(4)
+                                        : const Radius.circular(18),
                                   ),
                                 ),
                                 child: Column(
@@ -294,7 +311,11 @@ class _ChatScreenState extends State<ChatScreen> {
                                     Text(
                                       msg.content,
                                       style: TextStyle(
-                                        color: souEu ? Colors.white : (isDark ? Colors.white : Colors.black87),
+                                        color: souEu
+                                            ? Colors.white
+                                            : (isDark
+                                                  ? Colors.white
+                                                  : Colors.black87),
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -304,7 +325,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                         fontSize: 11,
                                         color: souEu
                                             ? Colors.white70
-                                            : (isDark ? Colors.white70 : Colors.black54),
+                                            : (isDark
+                                                  ? Colors.white70
+                                                  : Colors.black54),
                                       ),
                                     ),
                                   ],
@@ -329,11 +352,15 @@ class _ChatScreenState extends State<ChatScreen> {
                         maxLines: null,
                         minLines: 1,
                         keyboardType: TextInputType.multiline,
-                        style: TextStyle(color: theme.textTheme.bodyLarge?.color),
+                        style: TextStyle(
+                          color: theme.textTheme.bodyLarge?.color,
+                        ),
                         decoration: InputDecoration(
                           hintText: "Digite uma mensagem...",
                           filled: true,
-                          fillColor: theme.inputDecorationTheme.fillColor ?? theme.cardColor,
+                          fillColor:
+                              theme.inputDecorationTheme.fillColor ??
+                              theme.cardColor,
                           hintStyle: TextStyle(color: theme.hintColor),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
@@ -349,7 +376,10 @@ class _ChatScreenState extends State<ChatScreen> {
                               width: 1.8,
                             ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
                         ),
                       ),
                     ),

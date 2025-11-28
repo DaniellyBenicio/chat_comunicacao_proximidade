@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:chat_de_conversa/components/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -68,10 +69,13 @@ class NearbyService with ChangeNotifier {
       Permission.bluetoothAdvertise,
       Permission.bluetoothConnect,
     ];
+
     final androidInfo = await DeviceInfoPlugin().androidInfo;
     if ((androidInfo.version.sdkInt ?? 0) >= 33) {
       permissions.add(Permission.nearbyWifiDevices);
+      permissions.add(Permission.notification);
     }
+
     final statuses = await permissions.request();
     return statuses.values.every((s) => s.isGranted || s.isLimited);
   }
@@ -177,9 +181,11 @@ class NearbyService with ChangeNotifier {
       id,
       onPayLoadRecieved: (endpointId, payload) async {
         if (payload.type != PayloadType.BYTES || payload.bytes == null) return;
-        final message = String.fromCharCodes(payload.bytes!);
-        if (message.startsWith("@@NAME@@:")) {
-          final realName = message.substring(9);
+
+        final messageText = String.fromCharCodes(payload.bytes!);
+
+        if (messageText.startsWith("@@NAME@@:")) {
+          final realName = messageText.substring(9);
           _realNames[endpointId] = realName;
           final dev = discoveredDevices[endpointId];
           if (dev != null) {
@@ -188,25 +194,36 @@ class NearbyService with ChangeNotifier {
           }
           return;
         }
+
         final receivedMessage = Message(
           sender: 'them',
-          content: message,
+          content: messageText,
           timestamp: DateTime.now(),
         );
+
         await _db.insertMessage(receivedMessage, endpointId);
-        _messageController.add({
-          'endpointId': endpointId,
-          'message': message,
-          'time': DateTime.now(),
-        });
+
         updateConversation(
           endpointId: endpointId,
           displayName: getDisplayName(endpointId),
-          message: message,
+          message: messageText,
           isFromMe: false,
+        );
+
+        _messageController.add({
+          'endpointId': endpointId,
+          'message': messageText,
+          'time': DateTime.now(),
+        });
+
+        // Mostra notificação **sempre**
+        NotificationService.showNotification(
+          getDisplayName(endpointId),
+          messageText,
         );
       },
     );
+
     await Future.delayed(const Duration(milliseconds: 400));
     try {
       await Nearby().sendBytesPayload(
@@ -294,9 +311,7 @@ class NearbyService with ChangeNotifier {
     );
     if (index >= 0) {
       final old = _savedConversations[index];
-      final newUnreadCount = isFromMe
-        ? 0
-        : old.unreadCount + 1;
+      final newUnreadCount = isFromMe ? 0 : old.unreadCount + 1;
 
       _savedConversations[index] = old.copyWith(
         lastMessage: message,
