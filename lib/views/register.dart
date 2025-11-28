@@ -164,7 +164,7 @@ class _RegisterState extends State<Register> {
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: Theme.of(context).secondaryHeaderColor,
+            color: Theme.of(context).primaryColor,
           ),
           onPressed: () => Navigator.pop(context),
         ),

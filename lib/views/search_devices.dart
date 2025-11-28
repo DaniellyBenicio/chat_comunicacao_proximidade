@@ -174,7 +174,10 @@ class SearchDevices extends StatelessWidget {
                                   Icons.chat,
                                   color: Colors.white,
                                 ),
-                                label: const Text("Chat"),
+                                label: const Text(
+                                  "Chat",
+                                  style: TextStyle(color: Colors.white),
+                                ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.green,
                                 ),
