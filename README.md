@@ -47,11 +47,12 @@ Você abre o app → ele procura automaticamente → quando outra pessoa com o G
 
 <br>
 
-### Tecnologias e Dependências Reais (conforme seu pubspec.yaml)
+### Tecnologias e Dependências 
 
 | Tecnologia / Pacote              | Finalidade                                       | Versão Atual |
 |----------------------------------|--------------------------------------------------|--------------|
-| Flutter + Dart                   | Framework principal                              | 3.24+        |
+| Flutter                          | Framework principal                              | 3.24+        |
+| Dart                             | Linguagem de Programação                         | Padrão       |
 | `nearby_connections: ^4.3.0`     | Conexão Bluetooth + Wi-Fi Direct (Google)        | 4.3.0        |
 | `provider: ^6.1.5+1`             | Gerenciamento de estado                          | 6.1.5+1      |
 | `sqflite: ^2.3.3`                | Banco de dados local (SQLite)                    | 2.3.3        |
@@ -60,12 +61,12 @@ Você abre o app → ele procura automaticamente → quando outra pessoa com o G
 | `permission_handler: ^12.0.1`    | Pedir permissões de localização e Bluetooth      | 12.0.1       |
 | `path_provider: ^2.1.5` + `path` | Caminhos para salvar o banco de dados            | 2.1.5        |
 | `device_info_plus: ^10.0.0`      | Identificar dispositivo único                    | 10.0.0       |
-| `logger: ^2.6.2`                 | Logs para debug (não aparece no app final)       | 2.6.2        |
-| Material 3 (You)                 | Design moderno do Google                         | Padrão       |
+| `logger: ^2.6.2`                 | Logs para debug                                  | 2.6.2        |
+| Material 3                       | Design moderno do Google                         | Padrão       |
 
 <br>
 
-### Como instalar e testar (passo a passo simples)
+### Como instalar e testar (passo a passo)
 
 Precisa de **2 celulares Android** (ou 2 emuladores com suporte a Bluetooth)
 
