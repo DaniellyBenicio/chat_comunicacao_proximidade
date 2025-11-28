@@ -313,6 +313,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         controller: _controller,
                         textInputAction: TextInputAction.send,
                         onSubmitted: (_) => _sendMessage(),
+                        maxLines: null,
+                        minLines: 1,
+                        keyboardType: TextInputType.multiline,
                         decoration: InputDecoration(
                           hintText: "Digite uma mensagem...",
                           filled: true,
