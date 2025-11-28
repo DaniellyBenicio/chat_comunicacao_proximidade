@@ -155,7 +155,7 @@ class _RegisterState extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).primaryColor;
+    const Color primaryColor = Color(0xFF004E89);
 
     return Scaffold(
       appBar: AppBar(
@@ -164,7 +164,9 @@ class _RegisterState extends State<Register> {
         leading: IconButton(
           icon: Icon(
             Icons.arrow_back,
-            color: Theme.of(context).primaryColor,
+            color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : const Color(0xFF004E89),
           ),
           onPressed: () => Navigator.pop(context),
         ),
@@ -185,14 +187,16 @@ class _RegisterState extends State<Register> {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
+                    color: primaryColor,
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Crie sua conta para continuar',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                  ),
                 ),
                 const SizedBox(height: 40),
 
@@ -207,13 +211,13 @@ class _RegisterState extends State<Register> {
                   },
                   decoration: InputDecoration(
                     labelText: 'Nome',
-                    prefixIcon: Icon(Icons.person, color: primaryColor),
+                    prefixIcon: Icon(Icons.person, color: primaryColor,),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: primaryColor, width: 2,),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   keyboardType: TextInputType.name,
@@ -239,8 +243,8 @@ class _RegisterState extends State<Register> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: primaryColor, width: 2,),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   keyboardType: TextInputType.emailAddress,
@@ -259,20 +263,19 @@ class _RegisterState extends State<Register> {
                   },
                   decoration: InputDecoration(
                     labelText: 'Senha',
-                    prefixIcon: Icon(Icons.lock, color: primaryColor),
+                    prefixIcon: Icon(Icons.lock, color: primaryColor,),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: primaryColor, width: 2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: primaryColor,
                       ),
                       onPressed: () {
                         setState(() {
@@ -299,15 +302,14 @@ class _RegisterState extends State<Register> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: primaryColor),
-                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: primaryColor, width: 2),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword
                             ? Icons.visibility
                             : Icons.visibility_off,
-                        color: primaryColor,
                       ),
                       onPressed: () {
                         setState(() {
@@ -322,7 +324,8 @@ class _RegisterState extends State<Register> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
+                    backgroundColor: const Color(0xFF004E89),
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),

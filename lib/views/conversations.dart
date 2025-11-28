@@ -161,12 +161,14 @@ class _ConversationsState extends State<Conversations> {
                   onChanged: (value) {
                     setState(() => searchText = value);
                   },
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                   decoration: InputDecoration(
                     hintText: "Buscar conversas...",
+                    hintStyle: TextStyle(color: Theme.of(context).hintColor),
                     prefixIcon: const Icon(Icons.search),
                     contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: Theme.of(context).cardColor,
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
                       borderSide: const BorderSide(

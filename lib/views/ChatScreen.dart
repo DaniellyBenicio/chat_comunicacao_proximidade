@@ -182,6 +182,10 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  Color _getContrastColor(Color background) {
+    return background.computeLuminance() > 0.5 ? Colors.black87 : Colors.white;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -252,14 +256,15 @@ class _ChatScreenState extends State<ChatScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: theme.dividerColor.withOpacity(0.3),
+                                    color: _getContrastColor(backgroundColor).withOpacity(0.15),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: Text(
                                     _formatDayHeader(msg.timestamp),
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: theme.textTheme.bodySmall?.color,
+                                      fontWeight: FontWeight.w500,
+                                      color: _getContrastColor(backgroundColor).withOpacity(0.85),
                                     ),
                                   ),
                                 ),

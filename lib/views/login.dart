@@ -89,7 +89,7 @@ class _LoginScreenState extends State<Login> {
     const Color primaryColor = Color(0xFF004E89);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
